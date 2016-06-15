@@ -1,0 +1,22 @@
+%% ABSTRACT %%
+
+% Outline for topics and Abstract
+
+% \begin{outline}[enumerate]
+% \1 Brief background
+% \1 We did HLA typing using multiple computational approaches and validated with LabCorp types.
+% \1 Decided SOAP-HLA is best approach
+% \1 Came up with workflow
+% \1 Compiled HLA type frequencies
+% \1 Ran gene-level association (ANOVA + dosage)
+% \2 Disease Severity, Drug Response, ACPA(?)
+% \1 Ran amino acid level associations
+% \1 Collapsed amino acids to haplotypes (ran association)
+% \2 Severity vs Response
+% \1 Collapsed haplotypes by disease severity
+% \2 Severity vs Response
+% \end{outline}
+
+The human leukocyte antigen region of the human genome harbors the several loci strongly associated with susceptibility to rheumatoid arthritis and other autoimmune diseases. It has been found to contribute to several aspects of the disease including severity, presentation, and treatment response. Here we assess the plausibility of using whole-genome sequencing for probing the region in clinical studies and present a workflow to probe the region at varying levels of resolution. First, by evaluating the performance of several computational HLA typing approaches, we determined that SOAP-HLA is the most robust approach to determining HLA type from next generation sequencing of a diverse cohort, balancing flexibility and accuracy. We performed HLA typing on 436 rheumatoid arthritis patients from a Phase III clinical trial using SOAP-HLA and then determined the primary amino acid sequences of HLA genes for each patient and collapsed select residues into functional haplotypes. We then used these genetic predictors, at the gene-, amino acid-, and haplotype-levels, to validate and identify associations with disease phenotypes. Furthermore, we recapitulate previous research showing that haplotypes associated with more severe disease state are also associated with greater treatment response. We do this using basic response measurements before and after treatment as well as with a more sophisticated approach making use of the longitudinal clinical trial design. Overall, we present a viable workflow to use next generation sequencing to assess the contribution of the HLA locus, at several levels, to clinical phenotypes. This approach can help facilitate new clinical discoveries in a time where next generation sequencing is becoming more readily available.
+
+
