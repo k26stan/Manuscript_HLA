@@ -76,7 +76,7 @@ PLATS <- c("SOP","CHP","SEQ","LAB")
 COLS.plat <- COLS.list.2[1:length(PLATS)]
 names(COLS.plat) <- PLATS
  # Haplotype/AA Frequency Colors
-COLS.fr <- COLS.list.2[7]
+COLS.fr <- COLS.list.2[1]
 COLS.AA <- c(colorRampPalette(COLS.list)(26),"black","grey90","grey50") ; names(COLS.AA) <- c(LETTERS,"*",".","?")
  # Phenotype Colors
 COLS.ph <- COLS.list.2[c(6,3,2)]
@@ -92,6 +92,19 @@ COLS.beta <- COLS.list.2[1]
 ## Set Date
 DATE <- gsub("-","",Sys.Date())
 
+# ## Set Paths to HLA Data Sets
+# PathToTypes <- "/Users/kstandis/Data/Janssen/Data/HLA/SOAP_HLA_Types/20151211_HLA_Types.Rdata"
+# PathToAA <- "/Users/kstandis/Data/Janssen/Data/HLA/Amino_Acids/20160126_HLA_AA.Rdata"
+# PathTo1KG <- "/Users/kstandis/Data/Genetics/HLA/1KG/20140702_hla_diversity.txt"
+# PathTo1KG.2 <- "/Users/kstandis/Data/Genetics/1KG/Panel_Key.txt"
+# PathToRefs <- "/Users/kstandis/Data/Genetics/HLA/Alignments_Rel_3190/"
+# PathToFT <- "/Users/kstandis/Data/Janssen/Data/Pheno/Derived/20151015_Full_Table.txt"
+# PathToAssocP <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/20160503_HLA_Assoc_0-P_Precise.Rdata"
+# PathToAssocB <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/20160503_HLA_Assoc_0-B_Precise.Rdata"
+# PathToHLA <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/"
+# PathToPlot <- paste("/Users/kstandis/Data/Janssen/Plots_Mac/",DATE,"_ManuHLA_Fig3/",sep="")
+# dir.create( PathToPlot )
+
 ## Set Paths to HLA Data Sets
 PathToTypes <- "/Users/kstandis/Data/Janssen/Data/HLA/SOAP_HLA_Types/20151211_HLA_Types.Rdata"
 PathToAA <- "/Users/kstandis/Data/Janssen/Data/HLA/Amino_Acids/20160126_HLA_AA.Rdata"
@@ -99,10 +112,12 @@ PathTo1KG <- "/Users/kstandis/Data/Genetics/HLA/1KG/20140702_hla_diversity.txt"
 PathTo1KG.2 <- "/Users/kstandis/Data/Genetics/1KG/Panel_Key.txt"
 PathToRefs <- "/Users/kstandis/Data/Genetics/HLA/Alignments_Rel_3190/"
 PathToFT <- "/Users/kstandis/Data/Janssen/Data/Pheno/Derived/20151015_Full_Table.txt"
-PathToAssocP <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/20160503_HLA_Assoc_0-P_Precise.Rdata"
-PathToAssocB <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/20160503_HLA_Assoc_0-B_Precise.Rdata"
+PathToAssocP <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/20160614_HLA_Assoc_0-P_Precise.Rdata" # 20160503_HLA_Assoc_0-P_Precise.Rdata"
+PathToAssocB <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/20160614_HLA_Assoc_0-B_Precise.Rdata" # 20160503_HLA_Assoc_0-B_Precise.Rdata"
+PathToAssocHap <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/20160614_HLA_Assoc_0-Hap_An.Rdata"
 PathToHLA <- "/Users/kstandis/Data/Janssen/Data/HLA/Association/"
 PathToPlot <- paste("/Users/kstandis/Data/Janssen/Plots_Mac/",DATE,"_ManuHLA_Fig3/",sep="")
+PathToSave <- paste("/Users/kstandis/Data/Janssen/Data/HLA/Association/",DATE,"_HLA_Assoc",sep="")
 dir.create( PathToPlot )
 
 ## Load HLA Association Results
@@ -110,6 +125,8 @@ load(file=PathToAssocP)
 summary(P.out)
 load(file=PathToAssocB)
 summary(B.out)
+load( PathToAssocHap )
+load( gsub("Hap_An","Hap_An.Table",PathToAssocHap,fixed=T) )
 
 ## Load Janssen HLA Results
  # Types
@@ -120,12 +137,15 @@ load( PathToAA )
 AA.l <- COMPILE
 
 ## Load HLA Types
-HLA_AA.l <- read.table(paste(PathToHLA,"20160208_HLA_Assoc_HLA_AA_Table.txt",sep=""),header=T,sep="\t" )
-HLA_TYP.l <- read.table(paste(PathToHLA,"20160208_HLA_Assoc_HLA_Types_Table.txt",sep=""),header=T,sep="\t" )
+HLA_AA.l <- read.table(paste(PathToHLA,"20160614_HLA_Assoc_HLA_AA_Table.txt",sep=""),header=T,sep="\t" )
 colnames(HLA_AA.l) <- gsub(".","_",colnames(HLA_AA.l),fixed=T)
 colnames(HLA_AA.l) <- gsub("-","_",colnames(HLA_AA.l),fixed=T)
+HLA_TYP.l <- read.table(paste(PathToHLA,"20160614_HLA_Assoc_HLA_Types_Table.txt",sep=""),header=T,sep="\t" )
 colnames(HLA_TYP.l) <- gsub(".","_",colnames(HLA_TYP.l),fixed=T)
 colnames(HLA_TYP.l) <- gsub("-","_",colnames(HLA_TYP.l),fixed=T)
+HLA_HAP.l <- read.table(paste(PathToHLA,"20160614_HLA_Assoc_HLA_Hap_Table.txt",sep=""),header=T,sep="\t" )
+colnames(HLA_HAP.l) <- gsub(".","_",colnames(HLA_HAP.l),fixed=T)
+colnames(HLA_HAP.l) <- gsub("-","_",colnames(HLA_HAP.l),fixed=T)
 
 ## Get Clinical Phenotype Info
 FT.l <- read.table( PathToFT, sep="\t",header=T )
@@ -168,49 +188,50 @@ N.GENE <- length(GENE_LIST)
 ## Merge Clinical w/ HLA Data
 MG.aa <- merge( FT, HLA_AA.l, by="ID" )
 MG.typ <- merge( FT, HLA_TYP.l, by="ID" )
+MG.hap <- merge( FT, HLA_HAP.l, by="ID" )
 
 #############################################################
 ## PLOT NULL MODELS #########################################
 #############################################################
 
 ## Calculate Null (Non-Genetic) Models
-FORM.null <- list()
-MOD.null <- list()
-for ( p in 1:2 ) {
-	pheno <- PHENOS[p]
-	covs <- COVS[p]
-	FORM.null[[pheno]] <- paste(pheno,"~",covs)
-	MOD.null[[pheno]] <- lm( as.formula(FORM.null[[pheno]]), data=FT )
-}
+# FORM.null <- list()
+# MOD.null <- list()
+# for ( p in 1:2 ) {
+# 	pheno <- PHENOS[p]
+# 	covs <- COVS[p]
+# 	FORM.null[[pheno]] <- paste(pheno,"~",covs)
+# 	MOD.null[[pheno]] <- lm( as.formula(FORM.null[[pheno]]), data=FT )
+# }
 
-## Pull out Results
-B.null <- lapply( MOD.null,function(x)summary(x)$coefficients[,"Estimate"] )
-SE.null <- lapply( MOD.null,function(x)summary(x)$coefficients[,"Std. Error"] )
-P.null <- lapply( MOD.null,function(x)summary(x)$coefficients[,"Pr(>|t|)"] )
-## Plot Results from Null Models
-png( paste(PathToPlot,"Null_1-CovarBetas.png",sep=""),height=1000,width=2000,pointsize=30 )
-layout( matrix(1:2,ncol=2),widths=c(2.5,1) )
- # Severity
-par(mar=c(7,4,4,1))
-YLIM <- c( 0, max(B.null$DAS_BL_MN) ) * c(1,1.3)
-GAP <- .1*diff(YLIM)
-TEMP <- barplot( B.null$DAS_BL_MN, col=COLS.beta,border=NA,las=2,ylim=YLIM,main="Clinical Model: Disease Severity",ylab="Effect Size" )
-abline( h=0:10,lty=3,col="grey50",lwd=1 )
-barplot( B.null$DAS_BL_MN, col=COLS.beta,border=NA,las=2,add=T )
-arrows( TEMP, B.null$DAS_BL_MN-SE.null$DAS_BL_MN, TEMP, B.null$DAS_BL_MN+SE.null$DAS_BL_MN, lwd=4,length=0 )
-text( TEMP, B.null$DAS_BL_MN+GAP*sign(B.null$DAS_BL_MN)+GAP/3, label=paste("B =",round(B.null$DAS_BL_MN,3)) )
-text( TEMP, B.null$DAS_BL_MN+GAP*sign(B.null$DAS_BL_MN)-GAP/3, label=paste("p =",formatC(P.null$DAS_BL_MN,format="e",digits=2)) )
- # Response
-par(mar=c(7,4,4,1))
-YLIM <- range(B.null$DEL_MNe_MN) * c(1.7,2.5)
-GAP <- .1*diff(YLIM)
-TEMP <- barplot( B.null$DEL_MNe_MN, col=COLS.beta,border=NA,las=2,ylim=YLIM,main="Clinical Model: Response",ylab="Effect Size" )
-abline( h=seq(-5,5,.25),lty=3,col="grey50",lwd=1 )
-barplot( B.null$DEL_MNe_MN, col=COLS.beta,border=NA,las=2,add=T )
-arrows( TEMP, B.null$DEL_MNe_MN-SE.null$DEL_MNe_MN, TEMP, B.null$DEL_MNe_MN+SE.null$DEL_MNe_MN, lwd=4,length=0 )
-text( TEMP, B.null$DEL_MNe_MN+GAP*sign(B.null$DEL_MNe_MN)+GAP/3, label=paste("B =",round(B.null$DEL_MNe_MN,3)) )
-text( TEMP, B.null$DEL_MNe_MN+GAP*sign(B.null$DEL_MNe_MN)-GAP/3, label=paste("p =",formatC(P.null$DEL_MNe_MN,format="e",digits=2)) )
-dev.off()
+# ## Pull out Results
+# B.null <- lapply( MOD.null,function(x)summary(x)$coefficients[,"Estimate"] )
+# SE.null <- lapply( MOD.null,function(x)summary(x)$coefficients[,"Std. Error"] )
+# P.null <- lapply( MOD.null,function(x)summary(x)$coefficients[,"Pr(>|t|)"] )
+# ## Plot Results from Null Models
+# png( paste(PathToPlot,"Null_1-CovarBetas.png",sep=""),height=1000,width=2000,pointsize=30 )
+# layout( matrix(1:2,ncol=2),widths=c(2.5,1) )
+#  # Severity
+# par(mar=c(7,4,4,1))
+# YLIM <- c( 0, max(B.null$DAS_BL_MN) ) * c(1,1.3)
+# GAP <- .1*diff(YLIM)
+# TEMP <- barplot( B.null$DAS_BL_MN, col=COLS.beta,border=NA,las=2,ylim=YLIM,main="Clinical Model: Disease Severity",ylab="Effect Size" )
+# abline( h=0:10,lty=3,col="grey50",lwd=1 )
+# barplot( B.null$DAS_BL_MN, col=COLS.beta,border=NA,las=2,add=T )
+# arrows( TEMP, B.null$DAS_BL_MN-SE.null$DAS_BL_MN, TEMP, B.null$DAS_BL_MN+SE.null$DAS_BL_MN, lwd=4,length=0 )
+# text( TEMP, B.null$DAS_BL_MN+GAP*sign(B.null$DAS_BL_MN)+GAP/3, label=paste("B =",round(B.null$DAS_BL_MN,3)) )
+# text( TEMP, B.null$DAS_BL_MN+GAP*sign(B.null$DAS_BL_MN)-GAP/3, label=paste("p =",formatC(P.null$DAS_BL_MN,format="e",digits=2)) )
+#  # Response
+# par(mar=c(7,4,4,1))
+# YLIM <- range(B.null$DEL_MNe_MN) * c(1.7,2.5)
+# GAP <- .1*diff(YLIM)
+# TEMP <- barplot( B.null$DEL_MNe_MN, col=COLS.beta,border=NA,las=2,ylim=YLIM,main="Clinical Model: Response",ylab="Effect Size" )
+# abline( h=seq(-5,5,.25),lty=3,col="grey50",lwd=1 )
+# barplot( B.null$DEL_MNe_MN, col=COLS.beta,border=NA,las=2,add=T )
+# arrows( TEMP, B.null$DEL_MNe_MN-SE.null$DEL_MNe_MN, TEMP, B.null$DEL_MNe_MN+SE.null$DEL_MNe_MN, lwd=4,length=0 )
+# text( TEMP, B.null$DEL_MNe_MN+GAP*sign(B.null$DEL_MNe_MN)+GAP/3, label=paste("B =",round(B.null$DEL_MNe_MN,3)) )
+# text( TEMP, B.null$DEL_MNe_MN+GAP*sign(B.null$DEL_MNe_MN)-GAP/3, label=paste("p =",formatC(P.null$DEL_MNe_MN,format="e",digits=2)) )
+# dev.off()
 
 #############################################################
 ## PLOT ASSOCIATION RESULTS #################################
@@ -237,17 +258,388 @@ NYHOLT <- function( PRED_TAB ) {
     return( meff )
 }
 
+# ## FCT: Pull out & Plot Results for a given Gene
+#  # (Updated Function w/ Single Plot)
+# PLOT_RESULTS <- function( P.pr, B.pr, gene, pheno_cov_table, tag ) {
+# 	## PULL RESULTS ##################
+
+# 	## Names/Tags/Parameters
+# 	PHENOS <- as.character(pheno_cov_table[,"PHENOS"])
+# 	N.PHENOS <- length(PHENOS)
+# 	tag.temp <- paste(tag,gene,sep="_")
+
+# 	## Actual Results
+# 	 # Pull TYP ANOVA Results
+# 	TYP_AOV <- P.pr$TYP[[gene]]
+# 	 # Pull TYP Additive Results
+# 	TYP_DOS <- P.pr$TYP_DOS[[gene]]
+# 	TYP_DOS.B <- B.pr$TYP_DOS[[gene]]
+# 	 # Pull AA ANOVA Results
+# 	AA_AOV <- P.pr$AA_AOV[[gene]]
+# 	 # Pull AA Additive Results
+# 	AA_DOS <- P.pr$AA_DOS[[gene]]
+# 	 # Pull pat_AA Results
+# 	pat_aa <-  PAT_AA[[gene]] # Raw Table
+
+# 	## Pull HLA Type Data from Table
+# 	HLA_AA.cols <- grep(paste("^",tag.temp,"_Pos",sep=""),colnames(HLA_AA.l))
+# 	HLA_AA.temp <- HLA_AA.l[,HLA_AA.cols]
+# 	colnames(HLA_AA.temp) <- gsub( paste(tag.temp,"_",sep=""),"",colnames(HLA_AA.temp) )
+# 	HLA_TYP.cols <- grep(paste("^",tag.temp,sep=""),colnames(HLA_TYP.l))
+# 	HLA_TYP.temp <- HLA_TYP.l[,HLA_TYP.cols]
+# 	colnames(HLA_TYP.temp) <- paste("T",gsub("_","",gsub( tag.temp,"",colnames(HLA_TYP.temp) )),sep="")
+# 	HLA_TYP.freq <- colSums( HLA_TYP.temp )# HLA_TYP.l[,HLA_TYP.cols] )
+
+# 	## Make Table for TYP Plot(s)
+# 	TYP <- cbind( TYP_AOV, TYP_DOS[,order(colnames(TYP_DOS))] ) ; colnames(TYP)[1] <- "ANOVA"
+# 	TYP <- TYP[PHENOS,]
+# 	TYP.2 <- TYP[PHENOS,-which(colnames(TYP)%in%c("ANOVA","T"))]
+# 	TYP.B <- TYP_DOS.B[,order(colnames(TYP_DOS.B))]
+# 	TYP.B <- TYP.B[PHENOS,]
+# 	if ( length(intersect(c("ANOVA","T"),colnames(TYP.B)))>0 ) {
+# 		TYP.B.2 <- TYP.B[PHENOS,-which(colnames(TYP.B)%in%c("ANOVA","T"))]
+# 	}else{ TYP.B.2 <- TYP.B }
+# 	TYP.F <- HLA_TYP.freq[colnames(TYP.B.2)]
+	
+# 	## Amino Acid ANOVA Results Plot(s)
+# 	ISNA <- which( apply(AA_AOV,2,function(x) all(is.na(x)) ) | colnames(AA_AOV)=="TYP" )
+# 	AA_AOV <- AA_AOV[ PHENOS,-ISNA ]
+
+# 	## PLOT RESULTS ##################
+
+# 	## Global Plotting Parameters
+# 	NYH.ph <- NYHOLT( FT[,PHENOS] )
+# 	PCH.ph <- rep(1,N.PHENOS)
+# 	PCH.ph[grep("BL_MN",PHENOS)] <- 2
+# 	PCH.ph[grep("RF|ACPA",PHENOS)] <- 3
+# 	names(PCH.ph) <- PHENOS
+
+# 	## HLA-Type Results Plots
+# 	 # Specific Plotting Parameters
+# 	YLIM <- c(0, max(4,-log10(min(TYP/30))) )
+# 	YLIM.B <- extendrange( TYP.B.2 )
+# 	MAIN.1 <- paste("HLA Type ANOVA:",gene)
+# 	MAIN.2 <- paste("HLA Type Dosage Regression:",gene)
+# 	NYH <- NYH.ph*NYHOLT(HLA_TYP.temp[,colnames(TYP_DOS)])
+# 	# BH <- exp*(.05/NYH.ph)
+# 	# points( -log10(exp), -log10(BH), type="l",lty=3,col="firebrick2",lwd=3)
+
+# 	png( paste(PathToPlot,tag,"_3ABC_TYP_AAanova",gene,".png",sep=""),height=1200,width=1800,pointsize=28 )
+# 	# layout( matrix(c(1,1,2,2, 3,3,3,4, 5,6,6,7), nrow=3, byrow=TRUE), widths=c(.2,1,3,1),height=c(1,1,1) )
+# 	layout( matrix(c(1,2,2,3,3,4), ncol=3, byrow=TRUE), widths=c(1,3,2),height=c(1,1) )
+# 	 # ANOVA
+# 	barplot( -log10(TYP[,"ANOVA"]), beside=T, las=2,col=COLS.ph,border=NA,ylim=YLIM,main=MAIN.1,ylab="-log10(p)")
+# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH.ph)),lty=2,col=COLS.cor,lwd=4 )
+# 	barplot( -log10(TYP[,"ANOVA"]), beside=T, las=2,col=COLS.ph,border=NA,add=T )
+# 	 # Regression (P-Values)
+# 	barplot( -log10(TYP.2), beside=T, las=2,col=COLS.ph,border=NA,ylim=YLIM,main=MAIN.2,ylab="-log10(p)")
+# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+# 	legend( "topleft", legend=rownames(TYP),title="Phenotype",fill=COLS.ph,border=NA, cex=1.2,ncol=nrow(TYP.2),bg="white" ) # ncol=ceiling(nrow(TYP)/4),
+# 	barplot( -log10(TYP.2), beside=T, las=2,col=COLS.ph,border=NA,add=T )
+# 	#  # Regression (B-Values)
+# 	# YLIM.B <- c(-1,1)
+# 	# barplot( TYP.B.2[1:2,], border=NA,beside=T, las=2,col=COLS.ph[1:2],ylim=YLIM.B,main=MAIN.2,ylab="Effect Size")
+# 	# abline( h=0:20,lty=3,col="grey50",lwd=1 ) ; abline(h=0)
+# 	# abline( h=-log10(.05/(NYH)),lty=3,col="magenta2",lwd=3 )
+# 	# legend( "topright", legend=rownames(TYP),title="Phenotype",fill=COLS.ph,border=NA, ncol=ceiling(nrow(TYP)/4),cex=.9 )
+# 	# barplot( TYP.B.2[1:2,], border=NA,beside=T, las=2,col=COLS.ph[1:2],add=T )
+# 	# dev.off()
+
+# 	## Amino Acid ANOVA
+# 	 # Specific Plotting Parameters
+# 	YLIM <- c(0, max(4,-log10(min(AA_AOV/30))) )
+# 	XVALS <- gsub("Pos_","",colnames(AA_AOV))
+# 	XVALS <- as.numeric( gsub(".","-",XVALS,fixed=T) )
+# 	XLIM <- range(XVALS)
+# 	MAIN <- paste("Amino Acid ANOVA: HLA",gene)
+# 	NYH.bonf <- prod(dim(AA_AOV))
+# 	 # Manhattan Style Plot Across Gene
+# 	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM, main=MAIN,xlab="Amino Acid Position",ylab="-log10(p)",xaxt="n")
+# 	axis( 1, at=seq(-1000,1000,20),las=1 )	
+# 	abline( v=seq(-1000,1000,10),lty=3,col="grey50")
+# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH.bonf)),lty=2,col=COLS.cor,lwd=4 )
+# 	# legend( "topright", legend=rownames(AA_AOV),title="Phenotype",col=COLS.ph,pch=PCH.ph, ncol=3,cex=.8,pt.lwd=2 )
+# 	SCRAP <- lapply( PHENOS, function(p) points( XVALS,-log10(AA_AOV[p,]), col=COLS.ph[p],pch=PCH.ph[p],lwd=2 ) )
+# 	 # QQ Plot
+# 	plot( 0,0,type="n",xlim=YLIM,ylim=YLIM, main="QQ P-Vals",xlab="-log10(Exp)",ylab="-log10(Exp)")
+# 	abline( 0,1, lwd=2, col="black" )
+# 	abline( h=0:20,v=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH.bonf)),lty=2,col=COLS.cor,lwd=4 )
+# 	legend( "bottomright", legend=rownames(AA_AOV),title="Phenotype",col=COLS.ph,pch=PCH.ph, cex=1,pt.lwd=2 )
+# 	exp <- 1:ncol(AA_AOV) / ncol(AA_AOV)
+# 	SCRAP <- lapply( PHENOS, function(p) points( -log10(exp),-log10(sort(AA_AOV[p,])), col=COLS.ph[p],pch=PCH.ph[p],lwd=2 ) )
+# 	dev.off()
+
+# 	## Amino Acid Additive Model
+# 	for ( p in 1:N.PHENOS ) {
+# 		pheno <- PHENOS[p]
+# 		ISNA <- which( unlist(lapply(AA_DOS[[pheno]],function(x) all(x=="NA") )) )
+# 		AAP <- AA_DOS[[pheno]][-ISNA]
+# 		AAP <- AAP[which(names(AAP)!="TYP")]
+# 		AAP <- lapply( AAP, function(x) x[which(x!=0)] )
+# 		HLA_AA.names <- intersect( colnames(HLA_AA.temp), gsub( ".","_",names(unlist(AAP)), fixed=T ) )
+
+# 		## Plotting Parameters & Data
+# 		 # Data
+# 		exp <- 1:length(unlist(AAP)) / length(unlist(AAP))
+# 		obs <- unlist(AAP)
+# 		 # Parameters
+# 		XVALS <- gsub("Pos_","",names(AAP))
+# 		XVALS <- as.numeric( gsub(".","-",XVALS,fixed=T) )
+# 		XLIM <- range(XVALS)
+# 		YLIM <- c(0, max(4,-log10(as.numeric(Reduce(min,AAP))/30)) )
+# 		NYH <- NYHOLT(HLA_AA.temp[,HLA_AA.names])
+# 		MAIN <- paste("Amino Acid Additive Model: HLA",gene,"-",pheno)
+# 		HEIGHT <- 800
+# 		WIDTH <- 2400 # 2000+5*ncol(AA_AOV) + 200
+# 		PLOT_RATIO <- c( (WIDTH-HEIGHT)/WIDTH, HEIGHT/WIDTH, 200/WIDTH )
+# 		png( paste(PathToPlot,tag,"_3D_AAdose",gene,"_",pheno,".png",sep=""),height=HEIGHT,width=WIDTH,pointsize=34 )
+# 		layout( matrix(c(1,2,3), 1, 3, byrow = TRUE), widths=PLOT_RATIO ) # layout( matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(3,2), heights=c(1,1) )
+# 		 # Manhattan Style Plot
+# 		plot( 0,0,type="n",xlim=XLIM,ylim=YLIM, main=MAIN,xlab="Amino Acid Position",ylab="-log10(p)",xaxt="n")
+# 		axis( 1, at=seq(-1000,1000,20),las=1 )	
+# 		abline( v=seq(-1000,1000,10),lty=3,col="grey50")
+# 		abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 		abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+# 		 # Data
+# 		SCRAP <- lapply( 1:length(AAP), function(x) points(rep(XVALS[x],length(AAP[[x]])),-log10(AAP[[x]]), pch=names(AAP[[x]]),col=COLS.AA[names(AAP[[x]])] ) )
+# 		## QQ Plot
+# 		plot( 0,0,type="n",xlim=YLIM,ylim=YLIM, main="QQ P-Vals",xlab="-log10(Exp)",ylab="-log10(Exp)")
+# 		abline( 0,1, lwd=2, col="black" )
+# 		abline( v=seq(-1000,1000,10),lty=3,col="grey50")
+# 		abline( h=0:20,v=0:20,lty=3,col="grey50",lwd=1 )
+# 		 # Multiple Hypotheses
+# 		abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+# 		 # Data
+# 		points( -log10(exp),-log10(sort(obs)), col=COLS.AA[unlist(lapply(AAP,names))][order(obs)],pch=unlist(lapply(AAP,names))[order(obs)],lwd=2 )
+# 		## Amino Acid Key
+# 		Which_AA <- which(names(COLS.AA)%in% pat_aa )
+# 		COLS.aa <- COLS.AA[Which_AA]
+# 		barplot( matrix(rep(1,length(COLS.aa)),ncol=1), beside=F,col=COLS.aa,xaxt="n",yaxt="n",ylab="AA")
+# 		axis( 2, at=1:length(COLS.aa)-.5, label=names(COLS.aa),las=2,cex.axis=.8 )
+# 		dev.off()
+# 	}
+# }
+# # PLOT_RESULTS( P.out$Dig_4, "DRB1", "Pr4" )
+
+# ## Run Through Genes
+# # WHICH_GENES <- c("A","B","C","DQB1","DRB1","DPA1","DPB1","DQA1")
+# WHICH_GENES <- c("DQB1","DRB1")
+# for ( gene in WHICH_GENES ) {
+# 	PLOT_RESULTS( P.out$Dig_4, B.out$Dig_4, gene, PH.COV, "Pr4" )
+# }
+
+# ## Run Through Genes
+# WHICH_GENES <- c("A","B","C","DQB1","DRB1")
+# for ( gene in WHICH_GENES ) {
+# 	PLOT_RESULTS( P.out$Dig_2, B.out$Dig_2, gene, PH.COV, "Pr2" )
+# }
+
+#############################################################
+## PLOT ASSOCIATION RESULTS (NEW) ###########################
+#############################################################
+
+# ## FCT: Pull out & Plot Results for a given Gene
+#  # (Updated Function w/ Single Plot)
+# PLOT_RESULTS <- function( P.pr, B.pr, gene, pheno_cov_table, tag ) {
+# 	## PULL RESULTS ##################
+
+# 	## Names/Tags/Parameters
+# 	PHENOS <- as.character(pheno_cov_table[,"PHENOS"])
+# 	N.PHENOS <- length(PHENOS)
+# 	tag.temp <- paste(tag,gene,sep="_")
+
+# 	## Actual Results
+# 	 # Pull TYP ANOVA Results
+# 	TYP_AOV <- P.pr$TYP[[gene]]
+# 	 # Pull TYP Additive Results
+# 	TYP_DOS <- P.pr$TYP_DOS[[gene]]
+# 	TYP_DOS.B <- B.pr$TYP_DOS[[gene]]
+# 	 # Pull AA ANOVA Results
+# 	AA_AOV <- P.pr$AA_AOV[[gene]]
+# 	 # Pull AA Additive Results
+# 	AA_DOS <- P.pr$AA_DOS[[gene]]
+# 	 # Pull pat_AA Results
+# 	pat_aa <-  PAT_AA[[gene]] # Raw Table
+
+# 	## Pull HLA Type Data from Table
+# 	HLA_AA.cols <- grep(paste("^",tag.temp,"_Pos",sep=""),colnames(HLA_AA.l))
+# 	HLA_AA.temp <- HLA_AA.l[,HLA_AA.cols]
+# 	colnames(HLA_AA.temp) <- gsub( paste(tag.temp,"_",sep=""),"",colnames(HLA_AA.temp) )
+# 	HLA_TYP.cols <- grep(paste("^",tag.temp,sep=""),colnames(HLA_TYP.l))
+# 	HLA_TYP.temp <- HLA_TYP.l[,HLA_TYP.cols]
+# 	colnames(HLA_TYP.temp) <- paste("T",gsub("_","",gsub( tag.temp,"",colnames(HLA_TYP.temp) )),sep="")
+# 	HLA_TYP.freq <- colSums( HLA_TYP.temp )# HLA_TYP.l[,HLA_TYP.cols] )
+
+# 	## Make Table for TYP Plot(s)
+# 	TYP <- cbind( TYP_AOV, TYP_DOS[,order(colnames(TYP_DOS))] ) ; colnames(TYP)[1] <- "ANOVA"
+# 	TYP <- TYP[PHENOS,]
+# 	TYP.2 <- TYP[PHENOS,-which(colnames(TYP)%in%c("ANOVA","T"))]
+# 	TYP.B <- TYP_DOS.B[,order(colnames(TYP_DOS.B))]
+# 	TYP.B <- TYP.B[PHENOS,]
+# 	if ( length(intersect(c("ANOVA","T"),colnames(TYP.B)))>0 ) {
+# 		TYP.B.2 <- TYP.B[PHENOS,-which(colnames(TYP.B)%in%c("ANOVA","T"))]
+# 	}else{ TYP.B.2 <- TYP.B }
+# 	TYP.F <- HLA_TYP.freq[colnames(TYP.B.2)]
+	
+# 	## Amino Acid ANOVA Results Plot(s)
+# 	ISNA <- which( apply(AA_AOV,2,function(x) all(is.na(x)) ) | colnames(AA_AOV)=="TYP" )
+# 	AA_AOV <- AA_AOV[ PHENOS,-ISNA ]
+
+# 	## PLOT RESULTS ##################
+
+# 	## Global Plotting Parameters
+# 	NYH.ph <- NYHOLT( FT[,PHENOS] )
+# 	PCH.ph <- rep(1,N.PHENOS)
+# 	PCH.ph[grep("BL_MN",PHENOS)] <- 2
+# 	PCH.ph[grep("RF|ACPA",PHENOS)] <- 3
+# 	names(PCH.ph) <- PHENOS
+
+# 	## HLA-Type Results Plots
+# 	 # Specific Plotting Parameters
+# 	XLIM <- c(1,ncol(TYP.2))
+# 	YLIM <- c(0, max(4,-log10(min(TYP/30))) )
+# 	MAIN.1 <- paste("ANOVA:",gene)
+# 	MAIN.2 <- paste("HLA Type Regression:",gene)
+# 	NYH <- NYH.ph*NYHOLT(HLA_TYP.temp[,colnames(TYP_DOS)])
+# 	 # Open Plot
+# 	png( paste(PathToPlot,tag,"_3AB_TYP",gene,".png",sep=""),height=1000,width=2500,pointsize=30 )
+# 	layout( matrix(1:2,ncol=2),widths=c(1,5) )
+# 	 # ANOVA
+# 	barplot( -log10(TYP[,"ANOVA"]), beside=T, las=2,col=COLS.ph,border=NA,ylim=YLIM,main=MAIN.1,ylab="-log10(p)")
+# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH.ph)),lty=2,col=COLS.cor,lwd=4 )
+# 	barplot( -log10(TYP[,"ANOVA"]), beside=T, las=2,col=COLS.ph,border=NA,add=T )
+# 	 # Regression (P-Values)
+# 	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM,main=MAIN.2,ylab="-log10(p)",xaxt="n",xlab="")
+# 	axis( 1, at=1:XLIM[2], label=colnames(TYP.2), las=2 )
+# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+# 	legend( "topleft", legend=rownames(TYP),title="Phenotype",col=COLS.ph,pch=16,pt.cex=1.5, cex=1.2,ncol=nrow(TYP.2),bg="white" ) # ncol=ceiling(nrow(TYP)/4),
+# 	points( rep(1:XLIM[2],each=3), -log10(TYP.2), col=adjustcolor(COLS.ph,.8),pch=16,cex=1.5 )
+# 	dev.off()
+
+# 	## HLA Betas (Resp vs Sev)
+# 	 # Specific Plotting Parameters
+# 	XLIM <- range(TYP.B.2["DAS_BL_MN",])
+# 	YLIM <- range(TYP.B.2["DEL_MNe_MN",])
+# 	MAIN <- "Response vs Severity Estimates"
+# 	png( paste(PathToPlot,tag,"_3C_RespVsSev",gene,".png",sep=""),height=1000,width=1000,pointsize=30 )
+# 	 # Resp vs Sev
+# 	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM, main=MAIN,xlab="Beta: Disease Severity",ylab="Beta: Drug Response" )
+# 	abline( h=seq(-5,5,.2),v=seq(-5,5,.2),lty=3,col="grey50",lwd=1 )
+# 	abline( h=0,v=0 )
+# 	points( TYP.B.2["DEL_MNe_MN",] ~ TYP.B.2["DAS_BL_MN",], pch=16,col=adjustcolor(COLS.beta,.6),cex=2*log10(1+TYP.F) )
+# 	MOD <- lm( TYP.B.2["DEL_MNe_MN",] ~ TYP.B.2["DAS_BL_MN",], weights=TYP.F )
+# 	PVAL <- summary(MOD)$coefficients[2,"Pr(>|t|)"]
+# 	abline( MOD, lty=2,lwd=4,col=COLS.beta )
+# 	text( TYP.B.2["DEL_MNe_MN",] ~ TYP.B.2["DAS_BL_MN",], label=gsub("T","",colnames(TYP.B.2)), pos=3 )
+# 	text( XLIM[2],YLIM[1], paste("p=",formatC(PVAL,3,format="e"),sep=""), pos=2 )
+# 	dev.off()
+
+# 	## Amino Acid ANOVA
+# 	png( paste(PathToPlot,tag,"_4A_AA",gene,".png",sep=""),height=800,width=2400,pointsize=26 )
+# 	layout( matrix(1:2,ncol=2), widths=c(2,1) )
+# 	 # Specific Plotting Parameters
+# 	YLIM <- c(0, max(4,-log10(min(AA_AOV/30))) )
+# 	XVALS <- gsub("Pos_","",colnames(AA_AOV))
+# 	XVALS <- as.numeric( gsub(".","-",XVALS,fixed=T) )
+# 	XLIM <- range(XVALS)
+# 	MAIN <- paste("Amino Acid ANOVA: HLA",gene)
+# 	NYH.bonf <- prod(dim(AA_AOV))
+# 	 # Manhattan Style Plot Across Gene
+# 	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM, main=MAIN,xlab="Amino Acid Position",ylab="-log10(p)",xaxt="n")
+# 	axis( 1, at=seq(-1000,1000,20),las=1 )	
+# 	abline( v=seq(-1000,1000,10),lty=3,col="grey50")
+# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH.bonf)),lty=2,col=COLS.cor,lwd=4 )
+# 	# legend( "topright", legend=rownames(AA_AOV),title="Phenotype",col=COLS.ph,pch=PCH.ph, ncol=3,cex=.8,pt.lwd=2 )
+# 	SCRAP <- lapply( PHENOS, function(p) points( XVALS,-log10(AA_AOV[p,]), col=adjustcolor(COLS.ph[p],.6),pch=16,cex=1.2 ) )
+# 	 # QQ Plot
+# 	plot( 0,0,type="n",xlim=YLIM,ylim=YLIM, main="QQ P-Vals",xlab="-log10(Exp)",ylab="-log10(Exp)")
+# 	abline( 0,1, lwd=2, col="black" )
+# 	abline( h=0:20,v=0:20,lty=3,col="grey50",lwd=1 )
+# 	abline( h=-log10(.05/(NYH.bonf)),lty=2,col=COLS.cor,lwd=4 )
+# 	legend( "bottomright", legend=rownames(AA_AOV),title="Phenotype",col=adjustcolor(COLS.ph,.8),pch=16, cex=1,pt.cex=1.2 )
+# 	exp <- 1:ncol(AA_AOV) / ncol(AA_AOV)
+# 	SCRAP <- lapply( PHENOS, function(p) points( -log10(exp),-log10(sort(AA_AOV[p,])), col=adjustcolor(COLS.ph[p],.6),pch=16,cex=1.2 ) )
+# 	dev.off()
+
+# 	## Amino Acid Additive Model
+# 	for ( p in 1:N.PHENOS ) {
+# 		pheno <- PHENOS[p]
+# 		ISNA <- which( unlist(lapply(AA_DOS[[pheno]],function(x) all(x=="NA") )) )
+# 		AAP <- AA_DOS[[pheno]][-ISNA]
+# 		AAP <- AAP[which(names(AAP)!="TYP")]
+# 		AAP <- lapply( AAP, function(x) x[which(x!=0)] )
+# 		HLA_AA.names <- intersect( colnames(HLA_AA.temp), gsub( ".","_",names(unlist(AAP)), fixed=T ) )
+
+# 		## Plotting Parameters & Data
+# 		 # Data
+# 		exp <- 1:length(unlist(AAP)) / length(unlist(AAP))
+# 		obs <- unlist(AAP)
+# 		 # Parameters
+# 		XVALS <- gsub("Pos_","",names(AAP))
+# 		XVALS <- as.numeric( gsub(".","-",XVALS,fixed=T) )
+# 		XLIM <- range(XVALS)
+# 		YLIM <- c(0, max(4,-log10(as.numeric(Reduce(min,AAP))/30)) )
+# 		NYH <- NYHOLT(HLA_AA.temp[,HLA_AA.names])
+# 		MAIN <- paste("Amino Acid Additive Model: HLA",gene,"-",pheno)
+# 		HEIGHT <- 800
+# 		WIDTH <- 2400 # 2000+5*ncol(AA_AOV) + 200
+# 		PLOT_RATIO <- c( (WIDTH-HEIGHT)/WIDTH, HEIGHT/WIDTH, 200/WIDTH )
+# 		png( paste(PathToPlot,tag,"_4B_AAdose",gene,"_",pheno,".png",sep=""),height=HEIGHT,width=WIDTH,pointsize=34 )
+# 		layout( matrix(1:3, ncol=3), widths=PLOT_RATIO ) # layout( matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(3,2), heights=c(1,1) )
+# 		 # Manhattan Style Plot
+# 		plot( 0,0,type="n",xlim=XLIM,ylim=YLIM, main=MAIN,xlab="Amino Acid Position",ylab="-log10(p)",xaxt="n")
+# 		axis( 1, at=seq(-1000,1000,20),las=1 )	
+# 		abline( v=seq(-1000,1000,10),lty=3,col="grey50")
+# 		abline( h=0:20,lty=3,col="grey50",lwd=1 )
+# 		abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+# 		 # Data
+# 		SCRAP <- lapply( 1:length(AAP), function(x) points(rep(XVALS[x],length(AAP[[x]])),-log10(AAP[[x]]), pch=names(AAP[[x]]),col=COLS.AA[names(AAP[[x]])] ) )
+# 		## QQ Plot
+# 		plot( 0,0,type="n",xlim=YLIM,ylim=YLIM, main="QQ P-Vals",xlab="-log10(Exp)",ylab="-log10(Exp)")
+# 		abline( 0,1, lwd=2, col="black" )
+# 		abline( v=seq(-1000,1000,10),lty=3,col="grey50")
+# 		abline( h=0:20,v=0:20,lty=3,col="grey50",lwd=1 )
+# 		 # Multiple Hypotheses
+# 		abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+# 		 # Data
+# 		points( -log10(exp),-log10(sort(obs)), col=COLS.AA[unlist(lapply(AAP,names))][order(obs)],pch=unlist(lapply(AAP,names))[order(obs)],lwd=2 )
+# 		## Amino Acid Key
+# 		Which_AA <- which(names(COLS.AA)%in% pat_aa )
+# 		COLS.aa <- COLS.AA[Which_AA]
+# 		barplot( matrix(rep(1,length(COLS.aa)),ncol=1), beside=F,col=COLS.aa,xaxt="n",yaxt="n",ylab="AA")
+# 		axis( 2, at=1:length(COLS.aa)-.5, label=names(COLS.aa),las=2,cex.axis=.8 )
+# 		dev.off()
+# 	}
+# }
+# # PLOT_RESULTS( P.out$Dig_4, "DRB1", "Pr4" )
+
+# ## Run Through Genes (4-digit precision)
+# # WHICH_GENES <- c("A","B","C","DQB1","DRB1","DPA1","DPB1","DQA1")
+# WHICH_GENES <- c("DQB1","DRB1")
+# WHICH_GENES <- "DRB1"
+# for ( gene in WHICH_GENES ) {
+# 	PLOT_RESULTS( P.out$Dig_4, B.out$Dig_4, gene, PH.COV, "Pr4" )
+# }
+
+
+# PLOT_RESULTS( P.out$Dig_4, B.out$Dig_4, "DRB1", PH.COV[3,], "Pr4" )
+
+
+#############################################################
+## PLOT ASSOCIATION RESULTS (NEW) ###########################
+#############################################################
+
 ## FCT: Pull out & Plot Results for a given Gene
  # (Updated Function w/ Single Plot)
-PLOT_RESULTS <- function( P.pr, B.pr, gene, pheno_cov_table, tag ) {
+PLOT_ACPA <- function( P.pr, B.pr, gene, tag ) {
 	## PULL RESULTS ##################
-
-	## Names/Tags/Parameters
-	PHENOS <- as.character(pheno_cov_table[,"PHENOS"])
-	N.PHENOS <- length(PHENOS)
-	tag.temp <- paste(tag,gene,sep="_")
-
-	## Actual Results
 	 # Pull TYP ANOVA Results
 	TYP_AOV <- P.pr$TYP[[gene]]
 	 # Pull TYP Additive Results
@@ -261,203 +653,289 @@ PLOT_RESULTS <- function( P.pr, B.pr, gene, pheno_cov_table, tag ) {
 	pat_aa <-  PAT_AA[[gene]] # Raw Table
 
 	## Pull HLA Type Data from Table
+	tag.temp <- paste(tag,gene,sep="_")
 	HLA_AA.cols <- grep(paste("^",tag.temp,"_Pos",sep=""),colnames(HLA_AA.l))
 	HLA_AA.temp <- HLA_AA.l[,HLA_AA.cols]
 	colnames(HLA_AA.temp) <- gsub( paste(tag.temp,"_",sep=""),"",colnames(HLA_AA.temp) )
 	HLA_TYP.cols <- grep(paste("^",tag.temp,sep=""),colnames(HLA_TYP.l))
 	HLA_TYP.temp <- HLA_TYP.l[,HLA_TYP.cols]
 	colnames(HLA_TYP.temp) <- paste("T",gsub("_","",gsub( tag.temp,"",colnames(HLA_TYP.temp) )),sep="")
+	HLA_TYP.freq <- colSums( HLA_TYP.temp )# HLA_TYP.l[,HLA_TYP.cols] )
 
-	## Make Table for TYP Plot(s)
-	TYP <- cbind( TYP_AOV, TYP_DOS[,order(colnames(TYP_DOS))] ) ; colnames(TYP)[1] <- "ANOVA"
-	TYP <- TYP[PHENOS,]
-	TYP.2 <- TYP[PHENOS,-which(colnames(TYP)%in%c("ANOVA","T"))]
-	TYP.B <- TYP_DOS.B[,order(colnames(TYP_DOS.B))]
-	TYP.B <- TYP.B[PHENOS,]
-	if ( length(intersect(c("ANOVA","T"),colnames(TYP.B)))>0 ) {
-		TYP.B.2 <- TYP.B[PHENOS,-which(colnames(TYP.B)%in%c("ANOVA","T"))]
-	}else{ TYP.B.2 <- TYP.B }
-	
-	## Amino Acid ANOVA Results Plot(s)
-	ISNA <- which( apply(AA_AOV,2,function(x) all(is.na(x)) ) | colnames(AA_AOV)=="TYP" )
-	AA_AOV <- AA_AOV[ PHENOS,-ISNA ]
-
-	## PLOT RESULTS ##################
-
-	## Global Plotting Parameters
-	NYH.ph <- NYHOLT( FT[,PHENOS] )
-	PCH.ph <- rep(1,N.PHENOS)
-	PCH.ph[grep("BL_MN",PHENOS)] <- 2
-	PCH.ph[grep("RF|ACPA",PHENOS)] <- 3
-	names(PCH.ph) <- PHENOS
-
-	## HLA-Type Results Plots
-	 # Specific Plotting Parameters
-	YLIM <- c(0, max(4,-log10(min(TYP/30))) )
-	YLIM.B <- extendrange( TYP.B.2 )
-	MAIN.1 <- paste("HLA Type ANOVA:",gene)
-	MAIN.2 <- paste("HLA Type Dosage Regression:",gene)
-	NYH <- NYH.ph*NYHOLT(HLA_TYP.temp[,colnames(TYP_DOS)])
-	# BH <- exp*(.05/NYH.ph)
-	# points( -log10(exp), -log10(BH), type="l",lty=3,col="firebrick2",lwd=3)
-
-	png( paste(PathToPlot,tag,"_3ABC_TYP_AAanova",gene,".png",sep=""),height=1200,width=1800,pointsize=28 )
-	# layout( matrix(c(1,1,2,2, 3,3,3,4, 5,6,6,7), nrow=3, byrow=TRUE), widths=c(.2,1,3,1),height=c(1,1,1) )
-	layout( matrix(c(1,2,2,3,3,4), ncol=3, byrow=TRUE), widths=c(1,3,2),height=c(1,1) )
-	 # ANOVA
-	barplot( -log10(TYP[,"ANOVA"]), beside=T, las=2,col=COLS.ph,border=NA,ylim=YLIM,main=MAIN.1,ylab="-log10(p)")
-	abline( h=0:20,lty=3,col="grey50",lwd=1 )
-	abline( h=-log10(.05/(NYH.ph)),lty=2,col=COLS.cor,lwd=4 )
-	barplot( -log10(TYP[,"ANOVA"]), beside=T, las=2,col=COLS.ph,border=NA,add=T )
-	 # Regression (P-Values)
-	barplot( -log10(TYP.2), beside=T, las=2,col=COLS.ph,border=NA,ylim=YLIM,main=MAIN.2,ylab="-log10(p)")
-	abline( h=0:20,lty=3,col="grey50",lwd=1 )
-	abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
-	legend( "topleft", legend=rownames(TYP),title="Phenotype",fill=COLS.ph,border=NA, cex=1.2,ncol=nrow(TYP.2) ) # ncol=ceiling(nrow(TYP)/4),
-	barplot( -log10(TYP.2), beside=T, las=2,col=COLS.ph,border=NA,add=T )
-	#  # Regression (B-Values)
-	# barplot( TYP.B.2, beside=T, las=2,col=COLS.ph,ylim=YLIM.B,main=MAIN.2,ylab="Effect Size")
-	# abline( h=0:20,lty=3,col="grey50",lwd=1 )
-	# abline( h=-log10(.05/(NYH)),lty=3,col="magenta2",lwd=3 )
-	# legend( "topright", legend=rownames(TYP),title="Phenotype",fill=COLS.ph, ncol=ceiling(nrow(TYP)/4),cex=.9 )
-	# barplot( TYP.B.2, beside=T, las=2,col=COLS.ph,add=T )
-	# dev.off()
-
-	## Amino Acid ANOVA
-	 # Specific Plotting Parameters
-	YLIM <- c(0, max(4,-log10(min(AA_AOV/30))) )
-	XVALS <- gsub("Pos_","",colnames(AA_AOV))
-	XVALS <- as.numeric( gsub(".","-",XVALS,fixed=T) )
-	XLIM <- range(XVALS)
-	MAIN <- paste("Amino Acid ANOVA: HLA",gene)
-	NYH.bonf <- prod(dim(AA_AOV))
-	 # Manhattan Style Plot Across Gene
-	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM, main=MAIN,xlab="Amino Acid Position",ylab="-log10(p)",xaxt="n")
-	axis( 1, at=seq(-1000,1000,20),las=1 )	
-	abline( v=seq(-1000,1000,10),lty=3,col="grey50")
-	abline( h=0:20,lty=3,col="grey50",lwd=1 )
-	abline( h=-log10(.05/(NYH.bonf)),lty=2,col=COLS.cor,lwd=4 )
-	# legend( "topright", legend=rownames(AA_AOV),title="Phenotype",col=COLS.ph,pch=PCH.ph, ncol=3,cex=.8,pt.lwd=2 )
-	SCRAP <- lapply( PHENOS, function(p) points( XVALS,-log10(AA_AOV[p,]), col=COLS.ph[p],pch=PCH.ph[p],lwd=2 ) )
-	 # QQ Plot
-	plot( 0,0,type="n",xlim=YLIM,ylim=YLIM, main="QQ P-Vals",xlab="-log10(Exp)",ylab="-log10(Exp)")
-	abline( 0,1, lwd=2, col="black" )
-	abline( h=0:20,v=0:20,lty=3,col="grey50",lwd=1 )
-	abline( h=-log10(.05/(NYH.bonf)),lty=2,col=COLS.cor,lwd=4 )
-	legend( "bottomright", legend=rownames(AA_AOV),title="Phenotype",col=COLS.ph,pch=PCH.ph, cex=1,pt.lwd=2 )
-	exp <- 1:ncol(AA_AOV) / ncol(AA_AOV)
-	SCRAP <- lapply( PHENOS, function(p) points( -log10(exp),-log10(sort(AA_AOV[p,])), col=COLS.ph[p],pch=PCH.ph[p],lwd=2 ) )
+	## HLA Type vs ACPA
+	p.plot <- TYP_DOS["ACPA",]
+	p.plot <- p.plot[ names(p.plot)!="T" ]
+	p.plot <- p.plot[ order(names(p.plot)) ]
+	gene.lab <- paste("HLA-",gene,"*",sep="")
+	gene.lab <- paste(gene,"*",sep="")
+	labs.plot <- paste( gene.lab, substr(names(p.plot),2,3), ":", substr(names(p.plot),4,5), sep="" )
+	labs.plot <- gsub( ":$","",labs.plot )
+	 # Plotting Parameters
+	NYH <- NYHOLT(HLA_TYP.temp[,names(p.plot)])
+	XLIM <- c(1,length(p.plot))
+	YLIM <- c( 0, -log10(min(p.plot))+1 )
+	MAIN <- "HLA-DRB1 vs ACPA Status"
+	COLS.acpa <- COLS.ph["ACPA"]
+	 # Plot It
+	png( paste(PathToPlot,"3_TYP_ACPA.png",sep=""),height=1000,width=1500,pointsize=30 )
+	par(mar=c(6,4,4,2))
+	plot( 0,0,type="n", xlim=XLIM,ylim=YLIM, yaxt="n",xaxt="n",xlab="",ylab="-log10(p)",main=MAIN )
+	axis( 2, at=0:10 )
+	axis( 1, at=1:length(p.plot), label=labs.plot, las=2 )
+	abline( h=0:10, lty=3,col="grey50",lwd=1 )
+	abline( h=0 )
+	abline( h=-log10(.05/NYH), lty=2,col="firebrick2",lwd=2 )
+	points( 1:length(p.plot), -log10(p.plot), pch=16,col=adjustcolor(COLS.acpa,.7), cex=1.6 )
 	dev.off()
 
-	## Amino Acid Additive Model
-	for ( p in 1:N.PHENOS ) {
-		pheno <- PHENOS[p]
-		ISNA <- which( unlist(lapply(AA_DOS[[pheno]],function(x) all(x=="NA") )) )
-		AAP <- AA_DOS[[pheno]][-ISNA]
-		AAP <- AAP[which(names(AAP)!="TYP")]
-		AAP <- lapply( AAP, function(x) x[which(x!=0)] )
-		HLA_AA.names <- intersect( colnames(HLA_AA.temp), gsub( ".","_",names(unlist(AAP)), fixed=T ) )
+	## Amino Acid vs ACPA
+	pheno <- "ACPA"
+	ISNA <- which( unlist(lapply(AA_DOS[[pheno]],function(x) all(x=="NA") )) )
+	AAP <- AA_DOS[[pheno]][-ISNA]
+	AAP <- AAP[which(names(AAP)!="TYP")]
+	AAP <- lapply( AAP, function(x) x[which(x!=0)] )
+	HLA_AA.names <- intersect( colnames(HLA_AA.temp), gsub( ".","_",names(unlist(AAP)), fixed=T ) )
+	 # Data
+	exp <- 1:length(unlist(AAP)) / length(unlist(AAP))
+	# P-Values & Positions
+	AAP.unlist <- unlist(AAP)
+	AAP.unlist.names <- names(AAP.unlist)
+	AAP.unlist.AA <- sapply( strsplit(AAP.unlist.names,".",fixed=T), tail, 1 )
+	AAP.unlist.pos <- gsub("Pos_","",AAP.unlist.names)
+	AAP.unlist.nchar <- nchar( AAP.unlist.pos )
+	AAP.unlist.pos <- sapply( 1:length(AAP.unlist), function(x)substr(AAP.unlist.pos[x],1,AAP.unlist.nchar[x]-2) )
+	AAP.unlist.pos <- as.numeric( gsub(".","-",AAP.unlist.pos,fixed=T) )
+	AAP.unlist.ord <- order(AAP.unlist)
+	# LD
+	COLS.acpa.ld.list <- colorRampPalette(c("black",COLS.acpa))(201)
+	AAP.cor <- cor(HLA_AA.temp[,HLA_AA.names],method="spearman")
+	AAP.cor.best <- AAP.cor[which.min(AAP.unlist),]
+	COLS.acpa.ld <- COLS.acpa.ld.list[ round(100*(1+AAP.cor.best)) ]
+	COLS.acpa.ld <- adjustcolor( COLS.acpa.ld.list[ round(100*(1+AAP.cor.best)) ], .8 )
+	# Parameters
+	XLIM <- range(AAP.unlist.pos)
+	YLIM <- c( 0, -log10(min(AAP.unlist))+1 )
+	NYH <- NYHOLT(HLA_AA.temp[,HLA_AA.names])
+	MAIN <- "HLA-DRB1 Residues vs ACPA Status"
+	# Plot It
+	png( paste(PathToPlot,"3_AA_ACPA.png",sep=""),height=1000,width=3000,pointsize=30 )
+	layout( matrix(1:2, ncol=2), widths=c(2,1) ) # layout( matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(3,2), heights=c(1,1) )
+	# Gene Plot
+	plot( 0,0,type="n", xlim=XLIM, ylim=YLIM, main=MAIN,ylab="-log10(p)",xlab="Amino Acid Position", yaxt="n" )
+	axis( 2, at=0:10, las=2 )
+	abline( h=0:10, lty=3,col="grey50",lwd=1 )
+	abline( h=0 )
+	abline( h=-log10(.05/NYH), lty=2,col="firebrick2",lwd=2 )
+	points( AAP.unlist.pos, -log10(AAP.unlist), pch=AAP.unlist.AA, col=COLS.acpa.ld, cex=1.5 )
+	# QQ Plot
+	plot( 0,0,type="n", xlim=YLIM,ylim=YLIM, xlab="-log10(Exp)",ylab="-log10(Obs)", main="QQ Plot HLA-DRB1 Residues" )
+	abline( h=0:10,v=0:10, lty=3,col="grey50",lwd=1 )
+	abline( 0,1 )
+	abline( h=-log10(.05/NYH), lty=2,col="firebrick2",lwd=2 )
+	points( -log10(exp), -log10(AAP.unlist[AAP.unlist.ord]), pch=AAP.unlist.AA[AAP.unlist.ord], col=COLS.acpa.ld[AAP.unlist.ord], cex=1.5 )
+	dev.off()
 
-		## Plotting Parameters & Data
-		 # Data
-		exp <- 1:length(unlist(AAP)) / length(unlist(AAP))
-		obs <- unlist(AAP)
-		 # Parameters
-		XVALS <- gsub("Pos_","",names(AAP))
-		XVALS <- as.numeric( gsub(".","-",XVALS,fixed=T) )
-		XLIM <- range(XVALS)
-		YLIM <- c(0, max(4,-log10(as.numeric(Reduce(min,AAP))/30)) )
-		NYH <- NYHOLT(HLA_AA.temp[,HLA_AA.names])
-		MAIN <- paste("Amino Acid Additive Model: HLA",gene,"-",pheno)
-		HEIGHT <- 800
-		WIDTH <- 2400 # 2000+5*ncol(AA_AOV) + 200
-		PLOT_RATIO <- c( (WIDTH-HEIGHT)/WIDTH, HEIGHT/WIDTH, 200/WIDTH )
-		png( paste(PathToPlot,tag,"_3D_AAdose",gene,"_",pheno,".png",sep=""),height=HEIGHT,width=WIDTH,pointsize=34 )
-		layout( matrix(c(1,2,3), 1, 3, byrow = TRUE), widths=PLOT_RATIO ) # layout( matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(3,2), heights=c(1,1) )
-		 # Manhattan Style Plot
-		plot( 0,0,type="n",xlim=XLIM,ylim=YLIM, main=MAIN,xlab="Amino Acid Position",ylab="-log10(p)",xaxt="n")
-		axis( 1, at=seq(-1000,1000,20),las=1 )	
-		abline( v=seq(-1000,1000,10),lty=3,col="grey50")
-		abline( h=0:20,lty=3,col="grey50",lwd=1 )
-		abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
-		 # Data
-		SCRAP <- lapply( 1:length(AAP), function(x) points(rep(XVALS[x],length(AAP[[x]])),-log10(AAP[[x]]), pch=names(AAP[[x]]),col=COLS.AA[names(AAP[[x]])] ) )
-		## QQ Plot
-		plot( 0,0,type="n",xlim=YLIM,ylim=YLIM, main="QQ P-Vals",xlab="-log10(Exp)",ylab="-log10(Exp)")
-		abline( 0,1, lwd=2, col="black" )
-		abline( v=seq(-1000,1000,10),lty=3,col="grey50")
-		abline( h=0:20,v=0:20,lty=3,col="grey50",lwd=1 )
-		 # Multiple Hypotheses
-		abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
-		 # Data
-		points( -log10(exp),-log10(sort(obs)), col=COLS.AA[unlist(lapply(AAP,names))][order(obs)],pch=unlist(lapply(AAP,names))[order(obs)],lwd=2 )
-		## Amino Acid Key
-		Which_AA <- which(names(COLS.AA)%in% pat_aa )
-		COLS.aa <- COLS.AA[Which_AA]
-		barplot( matrix(rep(1,length(COLS.aa)),ncol=1), beside=F,col=COLS.aa,xaxt="n",yaxt="n",ylab="AA")
-		axis( 2, at=1:length(COLS.aa)-.5, label=names(COLS.aa),las=2,cex.axis=.8 )
+	######################################
+	## Plot P-Values for Collapsed Haplotypes
+	hap <- "p117174"
+	MG.HAP <- merge( OUT[[hap]]$HAP, FT, by.x="row.names",by.y="ID" )
+	
+	## Pull Association Results
+	 # P-Values
+	P.comp <- OUT[[hap]]$P[]
+	P.comp.2 <- P.comp["ACPA",-grep("ANOVA",colnames(P.comp))]
+	## Plotting Parameters
+	 # Nyholt Correction
+	HAPS.uniq <- setdiff( colnames(P.comp), "ANOVA" )
+	HAP.com <- OUT[[hap]]$FR.com
+	NYH <- NYHOLT( MG.HAP[,HAP.com] )
+
+	## Plot Haplotype Association P-Values (New Version)
+	XLIM <- c(1,length(P.comp.2))
+	YLIM <- c( 0, -log10(min(P.comp.2))+1 )
+	MAIN.2 <- paste("Haplotype Regression:",hap)
+	png( paste(PathToPlot,"3_HAP_ACPA.png",sep=""),height=1000,width=1500,pointsize=30 )
+	par(mar=c(6,4,4,2))
+	 # Regression (P-Values)
+	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM,main=MAIN.2,ylab="-log10(p)",xaxt="n",xlab="")
+	axis( 1, at=1:XLIM[2], label=names(P.comp.2), las=2 )
+	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+	abline( h=0 )
+	abline( h=-log10(.05/(NYH)),lty=2,col="firebrick2",lwd=2 )
+	points( 1:XLIM[2], -log10(P.comp.2), col=adjustcolor(COLS.acpa,.8),pch=16,cex=1.5 )
+	dev.off()
+}
+PLOT_ACPA( P.out$Dig_4, B.out$Dig_4, "DRB1", "Pr4" )
+
+##########################################
+## PLOT COLLAPSED HAPLOTYPE RESULTS ######
+
+## FCT: Grouped Haplotype Analysis
+PLOT_HAPS <- function( hap, tag ) {
+	## Merge Clinical & Haplotype Data
+	MG.HAP <- merge( OUT[[hap]]$HAP, FT, by.x="row.names",by.y="ID" )
+	
+	######################################
+	## Plot P-Values for Collapsed Haplotypes
+
+	## Pull Association Results
+	 # P-Values
+	P.comp <- OUT[[hap]]$P
+	P.comp.2 <- P.comp[,-grep("ANOVA",colnames(P.comp))]
+	 # Betas
+	B.comp <- OUT[[hap]]$B
+	## Plotting Parameters
+	 # Nyholt Correction
+	HAPS.uniq <- setdiff( colnames(P.comp), "ANOVA" )
+	HAP.com <- OUT[[hap]]$FR.com
+	NYH.ph <- NYHOLT( MG.HAP[,PHENOS] )
+	NYH.hap <- NYHOLT( MG.HAP[,HAP.com] )
+	NYH <- NYH.ph*NYH.hap
+
+	## Plot Haplotype Association P-Values (New Version)
+	XLIM <- c(1,ncol(P.comp.2))
+	YLIM <- c( 0,-log10(min(P.comp.2)/30) )
+	MAIN.1 <- paste("ANOVA:",hap)
+	MAIN.2 <- paste("Haplotype Regression:",hap)
+	png( paste(PathToPlot,"/DRB1_",hap,"_5A-HapAssoc_Ps.png",sep=""), height=1000,width=2000,pointsize=30 ) # width=2500
+	# png( paste(PathToPlot,"_3AB_TYP",gene,".png",sep=""),height=1000,width=2500,pointsize=30 )
+	layout( matrix(1:2,byrow=T,ncol=2), width=c(1,4) )
+	par(mar=c(7,4,3,2))
+	 # ANOVA
+	barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,main="ANOVA",ylab="-log10(p)")
+	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+	abline( h=-log10(.05/(NYH.ph)),lty=2,col=COLS.cor,lwd=3 )
+	barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,add=T )
+	 # Regression (P-Values)
+	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM,main=MAIN.2,ylab="-log10(p)",xaxt="n",xlab="")
+	axis( 1, at=1:XLIM[2], label=colnames(P.comp.2), las=2 )
+	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+	abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+	legend( "topleft", legend=rownames(P.comp.2),title="Phenotype",col=COLS.ph,pch=16,pt.cex=1.5, cex=1.2,ncol=nrow(P.comp.2),bg="white" ) # ncol=ceiling(nrow(TYP)/4),
+	points( rep(1:XLIM[2],each=3), -log10(P.comp.2), col=adjustcolor(COLS.ph,.8),pch=16,cex=1.5 )
+	dev.off()
+
+	##########################################
+	## Plot Response vs Severity Data
+
+	## Pull Phenotype Names/Numbers
+	P.n <- grep("RF|ACPA",rownames(B.comp),value=T,invert=T) # colnames(BETAS[[hap]])
+	P.num <- length(P.n)
+
+	## Create Plots for Various Phenotypes
+	for ( p in grep("_MNe_MN$",P.n) ) {
+		
+		## Pull Betas & other info
+		y_pheno <- P.n[p]
+		x_pheno <- P.n[p+P.num/2] # x_pheno <- P.n[p+4]
+		H.n <- rownames(BETAS[[hap]])
+		H.f <- FREQS[[hap]][H.n]
+		H.b <- BETAS[[hap]][H.n,]
+		H.s <- SES[[hap]][H.n,]
+		H.p <- PS[[hap]][H.n,]
+		H.b <- BETAS.f[[hap]][H.n,]
+		H.s <- SES.f[[hap]][H.n,]
+		H.p <- PS.f[[hap]][H.n,]
+
+		## Create Plot/File Location
+		 # Plotting Parameters
+		y_lab <- "Beta: Drug Response" # paste("Beta:",x_pheno)
+		x_lab <- "Beta: Disease Severity" # paste("Beta:",y_pheno)
+		main.1 <- paste( "Effect Sizes of",hap,"Haplotypes:",strsplit(x_pheno,"_")[[1]][1] )
+		main.2 <- paste( "Response vs Severity Estimates:",strsplit(x_pheno,"_")[[1]][1] )
+
+		png( paste(PathToPlot,"HapGroup_",hap,"-",tag,"_1_",x_pheno,".png",sep=""),height=1000,width=2000,pointsize=30 )
+		par(mfrow=c(1,2))
+		## Haplotype Effect Sizes
+		XLIM <- c(0,1+nrow(H.b))
+		YLIM <- extendrange(H.b[,c(y_pheno,x_pheno)],f=.25)
+		ORDER <- order(H.b[,x_pheno])
+		plot( 0,0,type="n", xlim=XLIM,ylim=YLIM,xaxt="n",main=main.1,ylab="Beta",xlab="" )
+		abline( h=seq(-5,5,.5),lty=3,col="grey50",lwd=1 )
+		abline( h=0,lty=1,col="grey50",lwd=1 )
+		abline( v=1:nrow(H.b),lty=3,col="grey50",lwd=1 )
+		points( 1:nrow(H.b),H.b[ORDER,x_pheno], pch=16,cex=2*log10(1+H.f[ORDER]),col=adjustcolor(COLS.ph[x_pheno],.5) )
+		axis(1,at=1:nrow(H.b),label=rownames(H.b)[ORDER],las=2)
+		points( 1:nrow(H.b),H.b[ORDER,y_pheno], pch=16,cex=2*log10(1+H.f[ORDER]),col=adjustcolor(COLS.ph[y_pheno],.5) )
+		legend("topright",pch=16,col=adjustcolor(COLS.ph[c(x_pheno,y_pheno)],.8),legend=c(x_pheno,y_pheno),pt.cex=1.8,ncol=2 )
+		
+		## Model Response vs Severity Haplotypes
+		XLIM <- extendrange(H.b[,x_pheno],f=.25)
+		YLIM <- extendrange(H.b[,y_pheno],f=.25)
+		WTS <- H.f
+		# WTS <- 1 / rowMeans(H.s[,c(y_pheno,x_pheno)]) 
+		plot( 0,0,type="n", xlim=XLIM,ylim=YLIM,main=main.2,xlab=x_lab,ylab=y_lab )
+		abline( h=seq(-5,5,.2),v=seq(-5,5,.2),lty=3,col="grey50",lwd=1 )
+		abline( h=0,v=0,lty=1,col="grey50",lwd=1 )
+		points( H.b[,x_pheno],H.b[,y_pheno], pch=16,col=adjustcolor(COLS.beta,.5), cex=2*log10(1+WTS) )
+		# arrows( H.b[,x_pheno]+H.s[,x_pheno],H.b[,y_pheno],H.b[,x_pheno]-H.s[,x_pheno],H.b[,y_pheno], code=3,angle=90,lwd=5,col=H.c )
+		# arrows( H.b[,x_pheno],H.b[,y_pheno]+H.s[,y_pheno],H.b[,x_pheno],H.b[,y_pheno]-H.s[,y_pheno], code=3,angle=90,lwd=5,col=H.c )
+		text( H.b[,x_pheno],H.b[,y_pheno]+.02*diff(YLIM), label=rownames(H.b), pos=3,cex=1.2 )
+		# points( H.b[,x_pheno],H.b[,y_pheno], pch=20,col=H.c, lwd=5,cex=WTS/mean(WTS) )
+		 # Significance
+		MOD.w <- lm( H.b[,y_pheno]~H.b[,x_pheno], weights=WTS )
+		abline(MOD.w,lwd=6,lty=2,col=COLS.beta )
+		text( quantile(XLIM,0),quantile(YLIM,.02), label=paste("p=",formatC(summary(MOD.w)$coefficients[length(coef(MOD.w)),4],digits=2,format="e"),sep=""),cex=1.2, pos=4 )
+		# legend( "topright")
+		# MOD <- lm( H.b[,y_pheno]~H.b[,x_pheno] )
+		# abline(MOD,lwd=6,lty=2,col=COLS.mods[2] )
+		# text( quantile(XLIM,.1),quantile(YLIM,.07), label=paste("p=",formatC(summary(MOD)$coefficients[length(coef(MOD)),4],digits=2,format="e"),sep=""), col=COLS.mods[2],cex=1.2 )
 		dev.off()
 	}
 }
-# PLOT_RESULTS( P.out$Dig_4, "DRB1", "Pr4" )
 
-## Run Through Genes
-# WHICH_GENES <- c("A","B","C","DQB1","DRB1","DPA1","DPB1","DQA1")
-WHICH_GENES <- c("DQB1","DRB1")
-for ( gene in WHICH_GENES ) {
-	PLOT_RESULTS( P.out$Dig_4, B.out$Dig_4, gene, PH.COV, "Pr4" )
+## Custom Groupings (Disease Severity) ###
+for ( hap in names(OUT) ) {
+	tag <- hap
+	PLOT_HAPS( hap, tag )
 }
 
-## Run Through Genes
-WHICH_GENES <- c("A","B","C","DQB1","DRB1")
-for ( gene in WHICH_GENES ) {
-	PLOT_RESULTS( P.out$Dig_2, B.out$Dig_2, gene, PH.COV, "Pr2" )
-}
+
 
 #############################################################
 ## HI-LITE SPECIFIC RESULTS #################################
 #############################################################
 
-HEAT_TAB <- function( MG, column ) {
-	TEMP <- table( MG$ACPA, MG[,column] )
-	COLS <- colorRampPalette(c("chartreuse2","white","firebrick2"))(100)
-	png( paste(PathToPlot,"HiLite-",column,".1.png",sep=""),height=500,width=600,pointsize=16 )
-	heatmap.2( prop.table(TEMP,1), Colv=NA,Rowv=NA,dendrogram="none",trace="none",
-		col=COLS, scale="none",cellnote=TEMP,notecol="black",notecex=2.4,
-		lhei=c(1,4),lwid=c(1,6),key=F,cexRow=1.4,cexCol=1.4,
-		main=paste("ACPA Status vs",column),xlab=paste(column,"Alleles"),ylab="ACPA (1=Negative)" )
-	dev.off()
-	png( paste(PathToPlot,"HiLite-",column,".2.png",sep=""),height=500,width=600,pointsize=16 )
-	heatmap.2( prop.table(TEMP,2), Colv=NA,Rowv=NA,dendrogram="none",trace="none",
-		col=COLS, scale="none",cellnote=TEMP,notecol="black",notecex=2.4,
-		lhei=c(1,4),lwid=c(1,6),key=F,cexRow=1.4,cexCol=1.4,
-		main=paste("ACPA Status vs",column),xlab=paste(column,"Alleles"),ylab="ACPA (1=Negative)" )
-	dev.off()
-	return(TEMP)
-}
+# HEAT_TAB <- function( MG, column ) {
+# 	TEMP <- table( MG$ACPA, MG[,column] )
+# 	COLS <- colorRampPalette(c("chartreuse2","white","firebrick2"))(100)
+# 	png( paste(PathToPlot,"HiLite-",column,".1.png",sep=""),height=500,width=600,pointsize=16 )
+# 	heatmap.2( prop.table(TEMP,1), Colv=NA,Rowv=NA,dendrogram="none",trace="none",
+# 		col=COLS, scale="none",cellnote=TEMP,notecol="black",notecex=2.4,
+# 		lhei=c(1,4),lwid=c(1,6),key=F,cexRow=1.4,cexCol=1.4,
+# 		main=paste("ACPA Status vs",column),xlab=paste(column,"Alleles"),ylab="ACPA (1=Negative)" )
+# 	dev.off()
+# 	png( paste(PathToPlot,"HiLite-",column,".2.png",sep=""),height=500,width=600,pointsize=16 )
+# 	heatmap.2( prop.table(TEMP,2), Colv=NA,Rowv=NA,dendrogram="none",trace="none",
+# 		col=COLS, scale="none",cellnote=TEMP,notecol="black",notecex=2.4,
+# 		lhei=c(1,4),lwid=c(1,6),key=F,cexRow=1.4,cexCol=1.4,
+# 		main=paste("ACPA Status vs",column),xlab=paste(column,"Alleles"),ylab="ACPA (1=Negative)" )
+# 	dev.off()
+# 	return(TEMP)
+# }
 
-## ACPA vs HLA-DRB1*03:01
- # NOT Shared Epitope
- # Protective against RA
-table( MG.typ$ACPA, MG.typ$Pr4_DRB1_03_01 )
-round(prop.table( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_03_01 ), 2 ),3)
-fisher.test( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_03_01 ) )
-HEAT_TAB( MG.typ, "Pr4_DRB1_03_01" )
+# ## ACPA vs HLA-DRB1*03:01
+#  # NOT Shared Epitope
+#  # Protective against RA
+# table( MG.typ$ACPA, MG.typ$Pr4_DRB1_03_01 )
+# round(prop.table( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_03_01 ), 2 ),3)
+# fisher.test( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_03_01 ) )
+# HEAT_TAB( MG.typ, "Pr4_DRB1_03_01" )
 
-## ACPA vs HLA-DRB1*01:01
- # IS Shared Epitope
- # RA Susceptibility Haplotype
-table( MG.typ$ACPA, MG.typ$Pr4_DRB1_01_01 )
-round(prop.table( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_01_01 ), 2),3)
-fisher.test( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_01_01 ) )
-HEAT_TAB( MG.typ, "Pr4_DRB1_01_01" )
+# ## ACPA vs HLA-DRB1*01:01
+#  # IS Shared Epitope
+#  # RA Susceptibility Haplotype
+# table( MG.typ$ACPA, MG.typ$Pr4_DRB1_01_01 )
+# round(prop.table( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_01_01 ), 2),3)
+# fisher.test( table( MG.typ$ACPA, MG.typ$Pr4_DRB1_01_01 ) )
+# HEAT_TAB( MG.typ, "Pr4_DRB1_01_01" )
 
-## ACPA vs HLA-DRB1*01:01
- # IS Shared Epitope
- # RA Susceptibility Haplotype
-HEAT_TAB( MG.aa, "Pr4_DRB1_Pos_77_N" )
-HEAT_TAB( MG.aa, "Pr4_DRB1_Pos_74_R" )
-HEAT_TAB( MG.aa, "Pr4_DRB1_Pos_77_T" )
+# ## ACPA vs HLA-DRB1*01:01
+#  # IS Shared Epitope
+#  # RA Susceptibility Haplotype
+# HEAT_TAB( MG.aa, "Pr4_DRB1_Pos_77_N" )
+# HEAT_TAB( MG.aa, "Pr4_DRB1_Pos_74_R" )
+# HEAT_TAB( MG.aa, "Pr4_DRB1_Pos_77_T" )
 
 #############################################################
 ## END OF DOC ###############################################

@@ -73,7 +73,7 @@ PLATS <- c("SOP","CHP","SEQ","LAB")
 COLS.plat <- COLS.list.2[1:length(PLATS)]
 names(COLS.plat) <- PLATS
  # Haplotype/AA Frequency Colors
-COLS.fr <- COLS.list.2[7]
+COLS.fr <- COLS.list.2[1]
 COLS.AA <- c(colorRampPalette(COLS.list)(26),"black","grey90","grey50") ; names(COLS.AA) <- c(LETTERS,"*",".","?")
  # Phenotype Colors
 COLS.ph <- COLS.list.2[c(6,3,2)]
@@ -420,22 +420,22 @@ XLAB <- "Gene"
 png(paste(PathToPlot,"1C-Conc.Comp.png",sep=""), height=1200,width=1800,pointsize=32 )
 par(layout( matrix(1:2,ncol=2),width=c(4,2) ))
  # 2-Digit
-TEMP.2 <- barplot( data.matrix(COMP.2[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.2$PLAT)],border=NA,yaxt="n",
+TEMP.2 <- barplot( data.matrix(COMP.2[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.2$PLAT)],1),border=NA,yaxt="n",
 	ylim=YLIM,ylab=YLAB.2,xlab=XLAB,main=MAIN.2 )
 abline(h=seq(0,1,.2),lty=3,col="grey50",lwd=1)
-axis( 2, at=seq(0,1,.2),label=seq(0,100,20),las=2 )
-barplot( data.matrix(COMP.2[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.2$PLAT)],border=NA,yaxt="n",add=T )
-barplot( data.matrix(COMP.2[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.2$VS)],border=COLS.plat[as.character(COMP.2$VS)],yaxt="n",add=T,density=25,angle=45 )
-legend( "topright",fill=COLS.plat[as.character(COMP.2$PLAT)],legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
-legend( "topright",fill=COLS.plat[as.character(COMP.2$VS)],border=COLS.plat[as.character(COMP.2$VS)],density=25,angle=45,legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
+axis( 2, at=seq(0,1,.2),label=seq(0,100,20),las=2 ) ; abline(h=c(0,1))
+barplot( data.matrix(COMP.2[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.2$PLAT)],.6),border=NA,yaxt="n",add=T )
+barplot( data.matrix(COMP.2[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.2$VS)],.6),border=NA,yaxt="n",add=T )
+legend( "topright",fill=adjustcolor(COLS.plat[as.character(COMP.2$PLAT)],.6),border=NA,legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
+legend( "topright",fill=adjustcolor(COLS.plat[as.character(COMP.2$VS)],.6),border=NA,legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
 text( TEMP.2[,1], .1, srt=90, label=paste("n=(",COMP.2$N,")",sep="") )
  # 4-Digit
-TEMP.4 <- barplot( data.matrix(COMP.4[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.4$PLAT)],border=NA,
+TEMP.4 <- barplot( data.matrix(COMP.4[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.4$PLAT)],1),border=NA,
 	yaxt="n",ylim=YLIM,ylab=YLAB.4,xlab=XLAB,main=MAIN.4 )
-abline(h=seq(0,1,.2),lty=3,col="grey50",lwd=1)
+abline(h=seq(0,1,.2),lty=3,col="grey50",lwd=1) ; abline(h=c(0,1))
 axis( 2, at=seq(0,1,.2),label=seq(0,100,20),las=2 )
-barplot( data.matrix(COMP.4[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.4$PLAT)],border=NA,yaxt="n",add=T )
-barplot( data.matrix(COMP.4[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.4$VS)],border=COLS.plat[as.character(COMP.4$VS)],yaxt="n",add=T,density=25,angle=45 )
+barplot( data.matrix(COMP.4[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.4$PLAT)],.6),border=NA,yaxt="n",add=T )
+barplot( data.matrix(COMP.4[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.4$VS)],.6),border=NA,yaxt="n",add=T )
 text( TEMP.4[,1], .1, srt=90, label=paste("n=(",COMP.4$N,")",sep="") )
 dev.off()
 
@@ -456,7 +456,7 @@ TAB.lab.4[which(duplicated(TAB.lab.4[,"Gene"])),"Gene"] <- ""
 
 ## Save Table & Make LaTeX Output
 write.table( TAB.lab.4, file=paste(PathToPlot,"T1-LabSamp.table.csv",sep=""),sep=",",row.names=F,col.names=T,quote=F )
-writeLines( print(xtable(TAB.lab.4, include.rownames=F )), con=paste(PathToPlot,"T1-LabSamp.LaTeX.txt",sep="") )
+writeLines( print(xtable(TAB.lab.4), include.rownames=F ), con=paste(PathToPlot,"T1-LabSamp.LaTeX.txt",sep="") )
 
 #######################################
 ## Calculate Concordance b/n Methods ##
@@ -537,22 +537,22 @@ XLAB <- "Gene"
 png(paste(PathToPlot,"1D-Conc.Lab.png",sep=""), height=1200,width=1800,pointsize=32 )
 par(layout( matrix(1:2,ncol=2),width=c(4,2) ))
  # 2-Digit
-TEMP.2 <- barplot( data.matrix(COMP.2l[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.2l$PLAT)],border=NA,yaxt="n",
+TEMP.2 <- barplot( data.matrix(COMP.2l[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.2l$PLAT)],1),border=NA,yaxt="n",
 	ylim=YLIM,ylab=YLAB.2,xlab=XLAB,main=MAIN.2 )
 abline(h=seq(0,1,.2),lty=3,col="grey50",lwd=1)
 axis( 2, at=seq(0,1,.2),label=seq(0,100,20),las=2 )
-barplot( data.matrix(COMP.2l[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.2l$PLAT)],border=NA,yaxt="n",add=T )
-barplot( data.matrix(COMP.2l[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.2l$VS)],border=COLS.plat[as.character(COMP.2l$VS)],yaxt="n",add=T,density=25,angle=45 )
-legend( "topright",fill=COLS.plat[as.character(COMP.2l$PLAT)],legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
-legend( "topright",fill=COLS.plat[as.character(COMP.2l$VS)],border=COLS.plat[as.character(COMP.2l$VS)],density=25,angle=45,legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
+barplot( data.matrix(COMP.2l[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.2l$PLAT)],.6),border=NA,yaxt="n",add=T )
+barplot( data.matrix(COMP.2l[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.2l$VS)],.6),border=NA,yaxt="n",add=T )
+legend( "topright",fill=adjustcolor(COLS.plat[as.character(COMP.2l$PLAT)],.6),border=NA,legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
+legend( "topright",fill=adjustcolor(COLS.plat[as.character(COMP.2l$VS)],.6),border=NA,legend=LEG.lab,title=LEG.main,bg=NA,ncol=3)
 text( TEMP.2[,1], .1, srt=90, label=paste("n=(",COMP.2l$N,")",sep="") )
  # 4-Digit
-TEMP.4 <- barplot( data.matrix(COMP.4l[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.4l$PLAT)],border=NA,
+TEMP.4 <- barplot( data.matrix(COMP.4l[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.4l$PLAT)],1),border=NA,
 	yaxt="n",ylim=YLIM,ylab=YLAB.4,xlab=XLAB,main=MAIN.4 )
 abline(h=seq(0,1,.2),lty=3,col="grey50",lwd=1)
 axis( 2, at=seq(0,1,.2),label=seq(0,100,20),las=2 )
-barplot( data.matrix(COMP.4l[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.4l$PLAT)],border=NA,yaxt="n",add=T )
-barplot( data.matrix(COMP.4l[,-(1:3)]), beside=T, col=COLS.plat[as.character(COMP.4l$VS)],border=COLS.plat[as.character(COMP.4l$VS)],yaxt="n",add=T,density=25,angle=45 )
+barplot( data.matrix(COMP.4l[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.4l$PLAT)],.6),border=NA,yaxt="n",add=T )
+barplot( data.matrix(COMP.4l[,-(1:3)]), beside=T, col=adjustcolor(COLS.plat[as.character(COMP.4l$VS)],.6),border=NA,yaxt="n",add=T )
 text( TEMP.4[,1], .1, srt=90, label=paste("n=(",COMP.4l$N,")",sep="") )
 dev.off()
 

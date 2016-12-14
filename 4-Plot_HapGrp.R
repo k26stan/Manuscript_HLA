@@ -205,215 +205,8 @@ NYHOLT <- function( PRED_TAB ) {
     return( meff )
 }
 
-# ## Function to do Haplotype Analysis of Specified Amino Acid Positions
-# HAP_AN <- function( Positions, tag ) {
-# 	## Pull together Haplotypes from Specified Positions
-# 	HAP <- apply( PAT_AA$DRB1[,paste("Pos",Positions,sep="_")], 1, function(x) paste(x,collapse="") )
-# 	HAP <- gsub("NA","-",HAP)
-# 	HAP.uniq <- sort(unique(HAP))
-# 	N.HAP <- length(HAP.uniq)
-# 	 # Get Haplotype Frequencies
-# 	HAP.freq <- table(HAP)
-# 	HAP.rare <- names(HAP.freq)[which(HAP.freq < 10 )]
-# 	HAP.com <- names(HAP.freq)[which(HAP.freq >= 10 )]
-# 	HAP.com <- setdiff( HAP.com, paste(rep("-",nchar(HAP.com[1])),collapse="") )
-# 	 # Convert to Array for Additive Analysis
-# 	HAP.arr <- array( 0,c(N.PATS,length(HAP.uniq)) )
-# 	colnames(HAP.arr) <- HAP.uniq
-# 	rownames(HAP.arr) <- PATS
-# 	for ( pat in PATS ) {
-# 		HAP.pat <- HAP[ grep(pat,names(HAP)) ]
-# 		if ( HAP.pat[1]==HAP.pat[2] ) { HAP.arr[pat,HAP.pat[1]] <- 2
-# 		}else{ HAP.arr[pat,HAP.pat] <- 1 }
-# 	}
-
-# 	## Combine Haplotype & Phenotype Data
-# 	MG.HAP <- merge( HAP.arr, FT, by.x="row.names",by.y="ID" )
-# 	# MG.HAP[,"ACPA"] <- MG.HAP[,"ACPA"]=="Positive"
-# 	# MG.HAP[,"ACPA"] <- MG.HAP[,"ACPA"]-1
-# 	MG.HAP2 <- merge( data.frame(Samp=sapply(strsplit(names(HAP),"_"),"[",1),HAP), FT, by.x="Samp",by.y="ID" )
-# 	# MG.HAP2[,"ACPA"] <- MG.HAP2[,"ACPA"]=="Positive"
-# 	# MG.HAP2[,"ACPA"] <- MG.HAP2[,"ACPA"]-1
-
-# 	## Association w/ Additive by Haplotype
-# 	LM.HAP.AA.F <- LM.HAP.AA <- LM.HAP.ANV <- P.HAP.AA <- B.HAP.AA <- list()
-# 	P.HAP.ANV <- numeric(length(PHENOS)) ; names(P.HAP.ANV) <- PHENOS
-# 	for ( p in 1:length(PHENOS) ) {
-# 		pheno <- PHENOS[p]
-# 		cov <- COVS[p]
-# 		# ANOVA Model
-# 		formula <- as.formula(paste( pheno,"~",cov,"+HAP" ))
-# 		# if ( cov=="" ) {
-# 		# 	formula <- as.formula(paste( pheno,"~ HAP" ))
-# 		# }else{
-# 		# 	formula <- as.formula(paste( pheno,"~",cov,"+HAP" ))
-# 		# }
-# 		if ( pheno %in% c("RF_ACPA","ACPA","RF") ) {
-# 			LM.HAP.ANV[[pheno]] <- MOD <- fisher.test( table( MG.HAP2[,pheno],as.character(MG.HAP2[,"HAP"]) ),simulate.p.value=T,B=1e6 )
-# 			P.HAP.ANV[pheno] <- LM.HAP.ANV[[pheno]]$p.value
-# 		}else{
-# 			LM.HAP.ANV[[pheno]] <- MOD <- lm( formula, data=MG.HAP2, subset=which(!(HAP%in%HAP.rare)) )
-# 			P.HAP.ANV[pheno] <- anova(MOD)["HAP","Pr(>F)"]
-# 			# Plot Residuals
-# 			if ( cov=="" ) {
-# 				formula <- as.formula(paste( pheno,"~ HAP" ))
-# 				RESID <- MG.HAP2[,pheno]
-# 				names(RESID) <- 1:length(RESID)
-# 			}else{
-# 				formula <- as.formula(paste( pheno,"~",cov ))
-# 				RESID <- resid(lm( formula, data=MG.HAP2))
-# 			}
-# 			# png( paste(PathToPlot,"/DRB1_",tag,"_2-BoxPlot_",pheno,".png",sep=""), height=1400,width=1600,pointsize=30 )
-# 			# par(mfrow=c(2,1))
-# 			# barplot( table(HAP),las=2,col="grey25",main=paste("HLA-DRB1: Pos",paste(Positions,collapse=","),"Haplotype Frequency"),ylab="# Haplotypes")
-# 			# abline(h=seq(0,1000,20),lty=3,col="grey50")
-# 			# barplot( table(HAP),las=2,col="grey25",add=T)
-# 			# boxplot( RESID ~ MG.HAP2$HAP[as.numeric(names(RESID))], las=2,col=COLS.ph[p],main=paste("HLA-DRB1: Pos11,71,74 Haplotype vs",pheno),ylab=paste("Resid: vs",cov) )
-# 			# abline(h=seq(-10,10,1),lty=3,col="grey50")
-# 			# boxplot( RESID ~ MG.HAP2$HAP[as.numeric(names(RESID))],add=T,las=2,col=COLS.ph[p] )
-# 			# points( RESID ~ MG.HAP2$HAP[as.numeric(names(RESID))],pch="+" )
-# 			# dev.off()
-# 		}
-# 		# Additive Model
-# 		  # Full Haplotype Model
-# 		HAP.uniq.2 <- grep("-",HAP.uniq,invert=T,value=T)
-# 		formula <- as.formula(paste( pheno,"~",cov,"+",paste(HAP.uniq.2,collapse="+") ))
-# 		if ( !(pheno %in% c("RF_ACPA","ACPA","RF")) ) {
-# 			LM.HAP.AA.F[[pheno]] <- lm( formula, data=MG.HAP )
-# 		}
-# 		  # Individual Haplotype Dosage
-# 		LM.HAP.AA[[pheno]] <- list()
-# 		P.HAP.AA[[pheno]] <- numeric(N.HAP) ; names(P.HAP.AA[[pheno]]) <- HAP.uniq
-# 		B.HAP.AA[[pheno]] <- P.HAP.AA[[pheno]]
-# 		for ( hap in HAP.uniq ) {
-# 			if ( all( strsplit(hap,"")[[1]]=="-" ) ) { next }
-# 			formula <- as.formula(paste( pheno,"~",cov,"+",hap ))
-# 			if ( pheno %in% c("RF_ACPA","ACPA","RF") ) {
-# 				formula <- as.formula(paste( pheno,"~",hap ))
-# 				LM.HAP.AA[[pheno]][[hap]] <- MOD <- glm( formula, data=MG.HAP, family=binomial(logit) )
-# 				P.HAP.AA[[pheno]][hap] <- summary(MOD)$coefficients[hap,"Pr(>|z|)"]
-# 				B.HAP.AA[[pheno]][hap] <- summary(MOD)$coefficients[hap,"Estimate"]
-# 				# B.HAP.AA[[pheno]][hap] <- summary(MOD)$coefficients[hap,"z value"]
-# 			}else{
-# 				LM.HAP.AA[[pheno]][[hap]] <- MOD <- lm( formula, data=MG.HAP )
-# 				P.HAP.AA[[pheno]][hap] <- anova(MOD)[hap,"Pr(>F)"]
-# 				B.HAP.AA[[pheno]][hap] <- summary(MOD)$coefficients[hap,"Estimate"]
-# 			}
-# 		} # Close Haplotype Loop
-# 	} # Close Pheno Loop
-
-# 	## Compile Association Results
-# 	 # P-Values
-# 	P.comp <- cbind( Reduce( rbind, P.HAP.AA ), P.HAP.ANV )
-# 	colnames(P.comp)[ncol(P.comp)] <- "ANOVA"
-# 	rownames(P.comp) <- names(P.HAP.AA)
-# 	P.comp <- P.comp[,-which(colnames(P.comp)==paste(rep("-",length(Positions)),collapse=""))]
-# 	 # Betas
-# 	B.comp <- Reduce( rbind, B.HAP.AA )
-# 	rownames(B.comp) <- names(B.HAP.AA)
-# 	B.comp <- B.comp[,-which(colnames(B.comp)==paste(rep("-",length(Positions)),collapse=""))]
-
-# 	######################################
-# 	## Plots #############################
-
-# 	## Plotting Parameters
-# 	 # Nyholt Correction
-# 	NYH.ph <- NYHOLT( MG.HAP[,PHENOS] )
-# 	NYH.hap <- NYHOLT( MG.HAP[,setdiff(HAP.uniq,"---")] )
-# 	NYH <- NYH.ph*NYH.hap
-
-# 	# ## Plot Haplotype Frequency
-# 	# png( paste(PathToPlot,"/DRB1_",tag,"_1-HapFreq.png",sep=""), height=800,width=1600,pointsize=30 )
-# 	# barplot( HAP.freq,las=2,col=COLS.fr,border=NA,main=paste("HLA-DRB1: Pos",paste(Positions,collapse=","),"Haplotype Frequency"),ylab="# Haplotypes")
-# 	# abline(h=seq(0,1000,20),lty=3,col="grey50")
-# 	# barplot( HAP.freq,las=2,col=COLS.fr,border=NA,add=T)
-# 	# dev.off()
-
-# 	# ## Plot Haplotype Association P-Values & Betas (Newer Version)
-# 	# YLIM <- c( 0,-log10(min(P.comp)/30) )
-# 	# png( paste(PathToPlot,"/DRB1_",tag,"_3b-HapAssoc.png",sep=""), height=1000,width=2000,pointsize=30 )
-# 	# layout( matrix(1:2,byrow=T,ncol=2), width=c(1,4) )
-# 	# par(mar=c(7,4,3,2))
-# 	#  # ANOVA
-# 	# barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,main="Haplotype ANOVA",ylab="-log10(p)")
-# 	# abline( h=0:20,lty=3,col="grey50",lwd=1 )
-# 	# abline( h=-log10(.05/(NYH.ph)),lty=2,col=COLS.cor,lwd=3 )
-# 	# barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,add=T )
-# 	#  # Dosage (Beta)
-# 	# YLIM <- range( B.comp[,HAP.com] )
-# 	# barplot( B.comp[,HAP.com], beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,main=paste("Haplotype Dosage Regression: HLA-DRB1: Pos",paste(Positions,collapse=",")),ylab="Beta")
-# 	# abline( h=seq(floor(YLIM[1]),ceiling(YLIM[2]),.5),lty=3,col="grey50",lwd=1 )
-# 	# # abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=3 )
-# 	# legend( "topleft",legend=rownames(B.comp[,HAP.com]),fill=COLS.ph,ncol=nrow(B.comp),cex=.8,border=NA)
-# 	# barplot( B.comp[,HAP.com], beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,add=T )
-# 	# dev.off()
-
-# 	## Plot Haplotype Association P-Values (New Version)
-# 	YLIM <- c( 0,-log10(min(P.comp)/30) )
-# 	png( paste(PathToPlot,"/DRB1_",tag,"_3p-HapAssoc.png",sep=""), height=1000,width=2000,pointsize=30 )
-# 	layout( matrix(1:2,byrow=T,ncol=2), width=c(1,4) )
-# 	par(mar=c(7,4,3,2))
-# 	 # ANOVA
-# 	barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,main="Haplotype ANOVA",ylab="-log10(p)")
-# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
-# 	abline( h=-log10(.05/(NYH.ph)),lty=2,col=COLS.cor,lwd=3 )
-# 	barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,add=T )
-# 	 # Dosage
-# 	barplot( -log10(P.comp[,HAP.com]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,main=paste("Haplotype Dosage Regression: HLA-DRB1: Pos",paste(Positions,collapse=",")),ylab="-log10(p)")
-# 	abline( h=0:20,lty=3,col="grey50",lwd=1 )
-# 	abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=3 )
-# 	legend( "topleft",legend=rownames(P.comp[,HAP.com]),fill=COLS.ph,ncol=nrow(P.comp),cex=.8,border=NA)
-# 	barplot( -log10(P.comp[,HAP.com]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,add=T )
-# 	dev.off()
-
-# 	# ## Plot Haplotype Association P-Values (Old Version)
-# 	# YLIM <- c( 0,-log10(min(P.comp)/30) )
-# 	# png( paste(PathToPlot,"/DRB1_",tag,"_3-HapAssoc.png",sep=""), height=800,width=1600,pointsize=30 )
-# 	# barplot( -log10(P.comp), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,main=paste("HLA-DRB1: Pos",paste(Positions,collapse=","),"Haplotype ANOVA"),ylab="-log10(p)")
-# 	# abline( h=0:20,lty=3,col="grey50",lwd=1 )
-# 	# abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=3 )
-# 	# legend( "topright",legend=rownames(P.comp),fill=COLS.ph,ncol=3,cex=.8)
-# 	# barplot( -log10(P.comp), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,add=T )
-# 	# dev.off()
-
-# 	## Compile Outputs
-# 	OUT <- list( MOD.AA=LM.HAP.AA, MOD.AA.F=LM.HAP.AA.F, MOD.ANV=LM.HAP.ANV, P=P.comp, B=B.comp, HAP=HAP.arr, FREQ=HAP.freq, FR.com=HAP.com, FR.rare=HAP.rare, SAMPS=MG.HAP$Row.names )
-# }
-
-# # COLS.list <- c("firebrick1","chocolate1","gold2","springgreen2","cadetblue2","steelblue2","slateblue3")
-# # COLS.ph <- colorRampPalette(COLS.list)(length(PHENOS)) ; names(COLS.ph) <- PHENOS
-# # COLS.list.2 <- c("aquamarine3","deeppink2",colorRampPalette(c("gold1","chartreuse2"))(3)[2],colorRampPalette(c("steelblue3","slateblue3"))(3)[2],"sienna2","deepskyblue1","goldenrod2")
-# # COLS.ph <- COLS.list.2[c(6,3,2)]
-# # names(COLS.ph) <- PHENOS
-# # COLS.fr <- COLS.list.2[5]
-# OUT <- list()
-
-# ##########################################
-# ## POS 11, 71, 74 ##
-#  # Viatte, et al (2015)
-# Positions <- c(11,71,74)
-# tag <- paste(c("p",Positions),collapse="")
-# OUT[[tag]] <- HAP_AN(Positions,tag)
-
-# ##########################################
-# ## POS 11, 13, 71, 74 ##
-# Positions <- 70:74
-# tag <- "pSE"
-# OUT[[tag]] <- HAP_AN(Positions,tag)
-
-# ##########################################
-# ## POS 11, 13, 71, 74 ##
-# Positions <- c(11,13,71,74)
-# tag <- paste(c("p",Positions),collapse="")
-# OUT[[tag]] <- HAP_AN(Positions,tag)
-
-# MG.hap.se <- merge( FT, OUT$pSE$HAP, by.x="ID",by.y="row.names" )
-# HEAT_TAB( MG.hap.se, "QKRAA" )
-# TEMP.tab <- HEAT_TAB( MG.hap.se, "QKRGR" )
-# fisher.test(TEMP.tab)
-
-# ##########################################
-# ## Compile Results & Save ##
+##########################################
+## Compile Results #######################
 
 ## Pull out Relevant Info from Models
 PHENOS.temp <- grep("RF|ACPA",PHENOS,invert=T,value=T)
@@ -435,102 +228,6 @@ for ( hap in names(OUT) ) {
 	# Haplotype Frequencies
 	FREQS[[hap]] <- colSums( OUT[[hap]]$HAP[ OUT[[hap]]$SAMPS, ] )
 }
-
-# ## Compile Model Info into Table & Save Table
-# HAP_OUT <- list()
-# for ( hap in names(OUT) ) {
-# 	P.n <- colnames(BETAS[[hap]])
-# 	P.num <- length(P.n)
-# 	H.n <- rownames(BETAS[[hap]])
-# 	H.f <- FREQS[[hap]][H.n]
-# 	H.b <- BETAS[[hap]][H.n,]
-# 	H.s <- SES[[hap]][H.n,]
-# 	H.p <- PS[[hap]][H.n,]
-# 	## Full Model
-# 	H.b.f <- BETAS.f[[hap]][H.n,]
-# 	H.s.f <- SES.f[[hap]][H.n,]
-# 	H.p.f <- PS.f[[hap]][H.n,]
-
-# 	## Compile Outputs
-# 	HAP_OUT[[hap]] <- data.frame( HAP=H.n, FREQ=H.f, BETA=H.b,SE=H.s,P=H.p, BETA.f=H.b.f,SE.f=H.s.f,P.f=H.p.f )
-# 	write.table( HAP_OUT[[hap]], paste(PathToPlot,"TAB_DRB1_",hap,"_Table.txt",sep=""), col.names=T,row.names=F,quote=F,sep="\t" )
-
-# }
-	# ## BETA for Response vs Disease Severity
-	# for ( p in grep("MNe_MN$",PHENOS) ) {
-	# 	y_pheno <- PHENOS[p]
-	# 	x_pheno <- PHENOS[p+1]
-	# 	png( paste(PathToPlot,"DRB1_",hap,"_4-BETA.1.",x_pheno,".png",sep=""),height=1600,width=1600,pointsize=36 )
-	# 	XLIM <- extendrange(H.b[,x_pheno],f=.2)
-	# 	YLIM <- extendrange(H.b[,y_pheno],f=.2)
-	# 	plot( H.b[,x_pheno],H.b[,y_pheno], pch=21,col=COLS.ph[x_pheno],bg=COLS.ph[y_pheno], xlim=XLIM,ylim=YLIM,main=paste("Beta Estimates of",y_pheno,"vs",x_pheno,"-",hap),xlab=paste("Beta:",x_pheno),ylab=paste("Beta:",y_pheno) )
-	# 	abline( h=seq(-5,5,.5),v=seq(-5,5,.5),lty=3,col="grey50",lwd=1 )
-	# 	abline( h=0,v=0,lty=1,col="grey50",lwd=1 )
-	# 	arrows( H.b[,x_pheno]+H.s[,x_pheno],H.b[,y_pheno],H.b[,x_pheno]-H.s[,x_pheno],H.b[,y_pheno], code=3,angle=90,lwd=5,col=COLS.ph[x_pheno] )
-	# 	arrows( H.b[,x_pheno],H.b[,y_pheno]+H.s[,y_pheno],H.b[,x_pheno],H.b[,y_pheno]-H.s[,y_pheno], code=3,angle=90,lwd=5,col=COLS.ph[y_pheno] )
-	# 	text( H.b[,x_pheno],H.b[,y_pheno]+.02*diff(YLIM), label=rownames(H.b), col=COLS.ph[x_pheno], pos=4,cex=1.2 )
-	# 	points( H.b[,x_pheno],H.b[,y_pheno], pch=21,col=COLS.ph[x_pheno],bg=COLS.ph[y_pheno], lwd=5,cex=1.2 )
-	# 	MOD <- lm( H.b[,y_pheno]~H.b[,x_pheno] )
-	# 	MOD <- lm( H.b[,y_pheno]~H.b[,x_pheno],weights=H.f )
-	# 	abline(MOD,lwd=6,lty=2,col=COLS.ph[y_pheno] )
-	# 	text( quantile(XLIM,.1),quantile(YLIM,.02), label=paste("p=",formatC(summary(MOD)$coefficients[length(coef(MOD)),4],digits=2,format="e"),sep=""), col=COLS.ph[y_pheno],cex=1.2 )
-	# 	dev.off()
-	# }
-
-	# ## BETA vs SE vs FREQ
-	# png( paste(PathToPlot,"DRB1_",hap,"_5-BETA.2.png",sep=""),height=1600,width=1600,pointsize=36 )
-	# # png( paste(PathToPlot,"DRB1-2_PAIRS.",hap,".png",sep=""),height=800,width=2400,pointsize=36 )
-	# # par(mfrow=c(1,3))
-	#  # BETA vs FREQ
-	# # plot( c(H.b) ~ rep(H.f,P.num), ylab="Beta",xlab="Frequency",main=paste("Effect Size vs Haplotype Frequency:",hap),col=COLS.ph[rep(P.n,each=P.num)],pch=as.numeric(as.factor(rep(H.n,P.num) )) )
-	#  # SE vs FREQ
-	# XLIM <- c(0,max(H.f)) ; YLIM <- c(0,max(H.s))
-	# plot( c(H.s) ~ rep(H.f,P.num), xlim=XLIM,ylim=YLIM,ylab="SE",xlab="Frequency",main=paste("Standard Error vs Haplotype Frequency:",hap),col=COLS.ph[rep(P.n,each=P.num)],pch=as.numeric(as.factor(rep(H.n,P.num) )), cex=3*sqrt(abs(c(H.b))),lwd=4 )
-	# abline(h=seq(-5,5,.1),v=seq(0,1000,50),lty=3,col="grey50",lwd=1)
-	# legend( quantile(XLIM,.65),quantile(YLIM,1), fill=COLS.ph,legend=names(COLS.ph) )
-	# legend( quantile(XLIM,.465),quantile(YLIM,1), pch=as.numeric(as.factor(H.n)),legend=H.n )
-	# legend( quantile(XLIM,.3),quantile(YLIM,1), pch=16,pt.cex=3*sqrt(c(.1,.5,1)),legend=c(.1,.5,1),title="Effect Size" )
-	#  # SE vs BETA
-	# # plot( c(H.b) ~ c(H.s), ylab="Beta",xlab="SE",main=paste("Effect Size vs Standard Error:",hap),col=COLS.ph[rep(P.n,each=P.num)],pch=as.numeric(as.factor(rep(H.n,P.num) )) )
-	# dev.off()
-
-	# ## Weighted Regression of BETAs (Response vs Severity)
-	#  # ...and also plot of Effect Size + Frequency (like Viatte, 2015)
-	# for ( p in grep("MNe_MN$",PHENOS) ) {
-	# 	y_pheno <- P.n[p]
-	# 	x_pheno <- P.n[p+length(P.n)/2] # P.n[p+1] 
-	# 	png( paste(PathToPlot,"DRB1_",hap,"_6-BETA.3.",x_pheno,".png",sep=""),height=1000,width=2000,pointsize=30 )
-	# 	par(mfrow=c(1,2))
-	# 	XLIM <- extendrange(H.b[,x_pheno],f=.2)
-	# 	YLIM <- extendrange(H.b[,y_pheno],f=.2)
-	# 	WTS <- H.f
-	# 	# WTS <- 1 / rowMeans(H.s[,c(y_pheno,x_pheno)]) 
-	# 	## Weighted Regression
-	# 	plot( H.b[,x_pheno],H.b[,y_pheno], pch=21,col=COLS.ph[x_pheno],bg=COLS.ph[y_pheno],lwd=5,cex=WTS/mean(WTS), xlim=XLIM,ylim=YLIM,main=paste("Wtd. Betas of",y_pheno,"vs",x_pheno,"-",hap),xlab=paste("Beta:",x_pheno),ylab=paste("Beta:",y_pheno) )
-	# 	abline( h=seq(-5,5,.5),v=seq(-5,5,.5),lty=3,col="grey50",lwd=1 )
-	# 	abline( h=0,v=0,lty=1,col="grey50",lwd=1 )
-	# 	arrows( H.b[,x_pheno]+H.s[,x_pheno],H.b[,y_pheno],H.b[,x_pheno]-H.s[,x_pheno],H.b[,y_pheno], code=3,angle=90,lwd=5,col=COLS.ph[x_pheno] )
-	# 	arrows( H.b[,x_pheno],H.b[,y_pheno]+H.s[,y_pheno],H.b[,x_pheno],H.b[,y_pheno]-H.s[,y_pheno], code=3,angle=90,lwd=5,col=COLS.ph[y_pheno] )
-	# 	text( H.b[,x_pheno],H.b[,y_pheno]+.02*diff(YLIM), label=rownames(H.b), col=COLS.ph[y_pheno], pos=4,cex=1.2 )
-	# 	points( H.b[,x_pheno],H.b[,y_pheno], pch=21,col=COLS.ph[x_pheno],bg=COLS.ph[y_pheno],lwd=5,cex=WTS/mean(WTS) )
-	# 	MOD <- lm( H.b[,y_pheno]~H.b[,x_pheno], weights=WTS )
-	# 	abline(MOD,lwd=6,lty=2,col="grey25" )
-	# 	text( quantile(XLIM,.1),quantile(YLIM,.02), label=paste("p=",formatC(summary(MOD)$coefficients[length(coef(MOD)),4],digits=2,format="e"),sep=""), col="grey25",cex=1.2 )
-	# 	## Haplotype Effect Sizes
-	# 	XLIM <- c(0,1+nrow(H.b))
-	# 	YLIM <- extendrange(H.b[,c(y_pheno,x_pheno)],f=.2)
-	# 	ORDER <- order(H.b[,x_pheno])
-	# 	plot( 0,0,type="n", xlim=XLIM,ylim=YLIM,xaxt="n",main=paste("Effect Sizes for:",hap,"-",y_pheno,"&",x_pheno),ylab="Beta",xlab="" )
-	# 	abline( v=1:nrow(H.b),h=-5:5,lty=3,col="grey50",lwd=1 )
-	# 	abline( h=0,lty=1,col="black",lwd=1 )
-	# 	points( 1:nrow(H.b),H.b[ORDER,x_pheno], pch=10,cex=log(2*H.f[ORDER]),col=COLS.ph[x_pheno],lwd=5 )
-	# 	axis(1,at=1:nrow(H.b),label=rownames(H.b)[ORDER],las=2)
-	# 	points( 1:nrow(H.b),H.b[ORDER,y_pheno], pch=10,cex=log(2*H.f[ORDER]),col=COLS.ph[y_pheno], lwd=5 )
-	# 	legend("topleft",pch=10,col=COLS.ph[c(y_pheno,x_pheno)],legend=c(y_pheno,x_pheno),pt.cex=2,pt.lwd=5 )
-	# 	dev.off()
-	# }
-# }
-
 
 #############################################################
 ## RE-CREATE VIATTE 2015 PLOTS ##############################
@@ -615,9 +312,131 @@ for ( hap in names(OUT) ) {
 # PLOT_AA_BETA( BETA.aa.se, Positions[3] )
 # PLOT_AA_BETA( BETA.aa.se, Positions[4] )
 
+##########################################
+## PLOT COLLAPSED HAPLOTYPE RESULTS ######
+
+## FCT: Grouped Haplotype Analysis
+PLOT_HAPS <- function( hap, tag ) {
+	## Merge Clinical & Haplotype Data
+	MG.HAP <- merge( OUT[[hap]]$HAP, FT, by.x="row.names",by.y="ID" )
+	
+	######################################
+	## Plot P-Values for Collapsed Haplotypes
+
+	## Pull Association Results
+	 # P-Values
+	P.comp <- OUT[[hap]]$P
+	P.comp.2 <- P.comp[,-grep("ANOVA",colnames(P.comp))]
+	 # Betas
+	B.comp <- OUT[[hap]]$B
+	## Plotting Parameters
+	 # Nyholt Correction
+	HAPS.uniq <- setdiff( colnames(P.comp), "ANOVA" )
+	HAP.com <- OUT[[hap]]$FR.com
+	NYH.ph <- NYHOLT( MG.HAP[,PHENOS] )
+	NYH.hap <- NYHOLT( MG.HAP[,HAP.com] )
+	NYH <- NYH.ph*NYH.hap
+
+	## Plot Haplotype Association P-Values (New Version)
+	XLIM <- c(1,ncol(P.comp.2))
+	YLIM <- c( 0,-log10(min(P.comp.2)/30) )
+	MAIN.1 <- paste("ANOVA:",hap)
+	MAIN.2 <- paste("Haplotype Regression:",hap)
+	png( paste(PathToPlot,"/DRB1_",hap,"_5A-HapAssoc_Ps.png",sep=""), height=1000,width=2000,pointsize=30 ) # width=2500
+	# png( paste(PathToPlot,"_3AB_TYP",gene,".png",sep=""),height=1000,width=2500,pointsize=30 )
+	layout( matrix(1:2,byrow=T,ncol=2), width=c(1,4) )
+	par(mar=c(7,4,3,2))
+	 # ANOVA
+	barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,main="ANOVA",ylab="-log10(p)")
+	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+	abline( h=-log10(.05/(NYH.ph)),lty=2,col=COLS.cor,lwd=3 )
+	barplot( -log10(P.comp[,"ANOVA"]), beside=T, col=COLS.ph,ylim=YLIM,las=2,border=NA,add=T )
+	 # Regression (P-Values)
+	plot( 0,0,type="n",xlim=XLIM,ylim=YLIM,main=MAIN.2,ylab="-log10(p)",xaxt="n",xlab="")
+	axis( 1, at=1:XLIM[2], label=colnames(P.comp.2), las=2 )
+	abline( h=0:20,lty=3,col="grey50",lwd=1 )
+	abline( h=-log10(.05/(NYH)),lty=2,col=COLS.cor,lwd=4 )
+	legend( "topleft", legend=rownames(P.comp.2),title="Phenotype",col=COLS.ph,pch=16,pt.cex=1.5, cex=1.2,ncol=nrow(P.comp.2),bg="white" ) # ncol=ceiling(nrow(TYP)/4),
+	points( rep(1:XLIM[2],each=3), -log10(P.comp.2), col=adjustcolor(COLS.ph,.8),pch=16,cex=1.5 )
+	dev.off()
+
+	##########################################
+	## Plot Response vs Severity Data
+
+	## Pull Phenotype Names/Numbers
+	P.n <- grep("RF|ACPA",rownames(B.comp),value=T,invert=T) # colnames(BETAS[[hap]])
+	P.num <- length(P.n)
+
+	## Create Plots for Various Phenotypes
+	for ( p in grep("_MNe_MN$",P.n) ) {
+		
+		## Pull Betas & other info
+		y_pheno <- P.n[p]
+		x_pheno <- P.n[p+P.num/2] # x_pheno <- P.n[p+4]
+		H.n <- rownames(BETAS[[hap]])
+		H.f <- FREQS[[hap]][H.n]
+		H.b <- BETAS[[hap]][H.n,]
+		H.s <- SES[[hap]][H.n,]
+		H.p <- PS[[hap]][H.n,]
+		H.b <- BETAS.f[[hap]][H.n,]
+		H.s <- SES.f[[hap]][H.n,]
+		H.p <- PS.f[[hap]][H.n,]
+
+		## Create Plot/File Location
+		 # Plotting Parameters
+		y_lab <- "Beta: Drug Response" # paste("Beta:",x_pheno)
+		x_lab <- "Beta: Disease Severity" # paste("Beta:",y_pheno)
+		main.1 <- paste( "Effect Sizes of",hap,"Haplotypes:",strsplit(x_pheno,"_")[[1]][1] )
+		main.2 <- paste( "Response vs Severity Estimates:",strsplit(x_pheno,"_")[[1]][1] )
+
+		png( paste(PathToPlot,"HapGroup_",hap,"-",tag,"_1_",x_pheno,".png",sep=""),height=1000,width=2000,pointsize=30 )
+		par(mfrow=c(1,2))
+		## Haplotype Effect Sizes
+		XLIM <- c(0,1+nrow(H.b))
+		YLIM <- extendrange(H.b[,c(y_pheno,x_pheno)],f=.25)
+		ORDER <- order(H.b[,x_pheno])
+		plot( 0,0,type="n", xlim=XLIM,ylim=YLIM,xaxt="n",main=main.1,ylab="Beta",xlab="" )
+		abline( h=seq(-5,5,.5),lty=3,col="grey50",lwd=1 )
+		abline( h=0,lty=1,col="grey50",lwd=1 )
+		abline( v=1:nrow(H.b),lty=3,col="grey50",lwd=1 )
+		points( 1:nrow(H.b),H.b[ORDER,x_pheno], pch=16,cex=2*log10(1+H.f[ORDER]),col=adjustcolor(COLS.ph[x_pheno],.5) )
+		axis(1,at=1:nrow(H.b),label=rownames(H.b)[ORDER],las=2)
+		points( 1:nrow(H.b),H.b[ORDER,y_pheno], pch=16,cex=2*log10(1+H.f[ORDER]),col=adjustcolor(COLS.ph[y_pheno],.5) )
+		legend("topright",pch=16,col=adjustcolor(COLS.ph[c(x_pheno,y_pheno)],.8),legend=c(x_pheno,y_pheno),pt.cex=1.8,ncol=2 )
+		
+		## Model Response vs Severity Haplotypes
+		XLIM <- extendrange(H.b[,x_pheno],f=.25)
+		YLIM <- extendrange(H.b[,y_pheno],f=.25)
+		WTS <- H.f
+		# WTS <- 1 / rowMeans(H.s[,c(y_pheno,x_pheno)]) 
+		plot( 0,0,type="n", xlim=XLIM,ylim=YLIM,main=main.2,xlab=x_lab,ylab=y_lab )
+		abline( h=seq(-5,5,.2),v=seq(-5,5,.2),lty=3,col="grey50",lwd=1 )
+		abline( h=0,v=0,lty=1,col="grey50",lwd=1 )
+		points( H.b[,x_pheno],H.b[,y_pheno], pch=16,col=adjustcolor(COLS.beta,.5), cex=2*log10(1+WTS) )
+		# arrows( H.b[,x_pheno]+H.s[,x_pheno],H.b[,y_pheno],H.b[,x_pheno]-H.s[,x_pheno],H.b[,y_pheno], code=3,angle=90,lwd=5,col=H.c )
+		# arrows( H.b[,x_pheno],H.b[,y_pheno]+H.s[,y_pheno],H.b[,x_pheno],H.b[,y_pheno]-H.s[,y_pheno], code=3,angle=90,lwd=5,col=H.c )
+		text( H.b[,x_pheno],H.b[,y_pheno]+.02*diff(YLIM), label=rownames(H.b), pos=3,cex=1.2 )
+		# points( H.b[,x_pheno],H.b[,y_pheno], pch=20,col=H.c, lwd=5,cex=WTS/mean(WTS) )
+		 # Significance
+		MOD.w <- lm( H.b[,y_pheno]~H.b[,x_pheno], weights=WTS )
+		abline(MOD.w,lwd=6,lty=2,col=COLS.beta )
+		text( quantile(XLIM,0),quantile(YLIM,.02), label=paste("p=",formatC(summary(MOD.w)$coefficients[length(coef(MOD.w)),4],digits=2,format="e"),sep=""),cex=1.2, pos=4 )
+		# legend( "topright")
+		# MOD <- lm( H.b[,y_pheno]~H.b[,x_pheno] )
+		# abline(MOD,lwd=6,lty=2,col=COLS.mods[2] )
+		# text( quantile(XLIM,.1),quantile(YLIM,.07), label=paste("p=",formatC(summary(MOD)$coefficients[length(coef(MOD)),4],digits=2,format="e"),sep=""), col=COLS.mods[2],cex=1.2 )
+		dev.off()
+	}
+}
+
+## Custom Groupings (Disease Severity) ###
+for ( hap in names(OUT) ) {
+	tag <- hap
+	PLOT_HAPS( hap, tag )
+}
 
 ##########################################
-## COLLAPSED HAPLOTYPE GROUPS ############
+## GROUP COLLAPSED HAPLOTYPE #############
 
 ## FCT: Group Haplotypes
 GROUP_BY <- function( hap, col_tag, n_grps ) {
@@ -632,7 +451,7 @@ GROUP_BY <- function( hap, col_tag, n_grps ) {
 # HAP_GRP <- GROUP_BY( hap, "DAS_BL_MN", 4 )
 
 ## FCT: Grouped Haplotype Analysis
-HAPLO_PLOT <- function( hap, HAP_GRP, tag ) {
+GROUPED_AN <- function( hap, HAP_GRP, tag ) {
 	# Set New HAP_GRP variable to be modified in first half of function
 	HAP_GRP.2 <- HAP_GRP
 	 # Specify Group Colors
@@ -836,9 +655,8 @@ HAPLO_PLOT <- function( hap, HAP_GRP, tag ) {
 	COMPILE <- list( MOD.f=MOD.hap_grp.full,MOD.i=MOD.hap_grp.ind,BETA=BETAS.G.hap_grp.ind,SE=SES.G.hap_grp.ind,P=PS.G.hap_grp.ind, HAP_GRP=HAP_GRP )
 	return(COMPILE)
 }
-# HAPLO_PLOT( hap, HAP_GRP, tag )
+GROUPED_AN( hap, HAP_GRP, tag )
 
-##########################################
 ## RUN GROUPED HAPLOTYPE ANALYSIS
 OUT.haplo_grp <- list()
 
@@ -847,10 +665,11 @@ for ( hap in names(OUT) ) {
 	for ( N_Grps in 4 ) {
 		HAP_GRP <- GROUP_BY(hap,"BL",N_Grps)
 		tag <- paste("BySever",N_Grps,"g",sep="")
-		OUT.haplo_grp[[paste(hap,tag,sep="_")]] <- try( HAPLO_PLOT( hap, HAP_GRP, tag ), silent=T )
+		# OUT.haplo_grp[[paste(hap,tag,sep="_")]] <- try( GROUPED_AN( hap, HAP_GRP, tag ), silent=T )
+		PLOT_HAPS( hap, tag )
 # 		HAP_GRP <- GROUP_BY(hap,"DAS_BL",N_Grps)
 # 		tag <- paste("ByDAS",N_Grps,"g",sep="")
-# 		OUT.haplo_grp[[paste(hap,tag,sep="_")]] <- try( HAPLO_PLOT( hap, HAP_GRP, tag ), silent=T )
+# 		OUT.haplo_grp[[paste(hap,tag,sep="_")]] <- try( GROUPED_AN( hap, HAP_GRP, tag ), silent=T )
 	}
 }
 
@@ -866,7 +685,7 @@ HAP_GRP$G1 <- c("VRA","VKA")
  # Specify Tag for Saving Plots
 tag <- "Viatte"
  # Run it...
-OUT.haplo_grp[[paste(hap,tag,sep="_")]] <- HAPLO_PLOT( hap, HAP_GRP, tag )
+OUT.haplo_grp[[paste(hap,tag,sep="_")]] <- GROUPED_AN( hap, HAP_GRP, tag )
 
 VIATTE_vs <- function( xvals, yvals, freqs, names ) {
 	plot( yvals ~ xvals, cex=log10(1+freqs[names]), col=adjustcolor(COLS.list.2[1],.7),pch=16 )
@@ -877,6 +696,9 @@ VIATTE_vs <- function( xvals, yvals, freqs, names ) {
 	# summary(MOD)
 	text( max(xvals,na.rm=T),max(yvals,na.rm=T), paste("p=",formatC(P,3,format="e")),pos=2 )
 }
+
+##########################################
+## VIATTE RESULTS vs JANSSEN #############
 
 ## Viatte 2013 Collapsed Haplotypes ######
  # Positions 11,13,71,74 vs Viatte '13 Susceptibility ORs
